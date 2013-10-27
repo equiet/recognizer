@@ -1,24 +1,18 @@
-/*jslint vars: true, plusplus: true, devel: true, nomen: true, regexp: true, indent: 4, maxerr: 50 */
-/*global define, $, brackets */
-
-/** Simple extension that adds a "File > Hello World" menu item. Inserts "Hello, world!" at cursor pos. */
 define(function (require, exports, module) {
-    "use strict";
+    'use strict';
 
     var CommandManager = brackets.getModule("command/CommandManager"),
         EditorManager  = brackets.getModule("editor/EditorManager"),
         Menus          = brackets.getModule("command/Menus"),
-        StatusBar      = brackets.getModule("widgets/StatusBar"),
-        ExtensionUtils = brackets.getModule("utils/ExtensionUtils");
-
+        ExtensionUtils = brackets.getModule("utils/ExtensionUtils"),
+        LiveDevelopment = brackets.getModule('LiveDevelopment/LiveDevelopment'),
+        Inspector       = brackets.getModule("LiveDevelopment/Inspector/Inspector");
 
     // Create status indicator
-    var $statusIndicators = $('#status-indicators'),
-        $indicator = $('<div />').attr('id', 'status-indicator-recognizer');
-    $statusIndicators.append($indicator);
-    $statusIndicators.find('.spinner').remove().appendTo($statusIndicators);
-    $indicator.html('Indicator ready').attr('class', 'is-active');
 
+    $(LiveDevelopment).on('statusChange', function(e, status) {
+        $indicator.html(status);
+    });
 
     ExtensionUtils.loadStyleSheet(module, "main.less");
 
