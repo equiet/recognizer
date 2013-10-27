@@ -1,0 +1,19 @@
+@recognizerBlue: rgb(50,205,220);
+
+#status-indicator-recognizer {
+	&:before {
+		content: "";
+		display: inline-block;
+		width: 6px;
+		height: 6px;
+		margin-right: 7px;
+		border-radius: 50%;
+	}
+	&.is-active:before {
+		background: @recognizerBlue;
+		box-shadow: 0 0 4px @recognizerBlue;
+	}
+	&.is-inactive {
+		border: 1px solid rgba(0,0,0,0.2);
+	}
+}

@@ -7,7 +7,20 @@ define(function (require, exports, module) {
 
     var CommandManager = brackets.getModule("command/CommandManager"),
         EditorManager  = brackets.getModule("editor/EditorManager"),
-        Menus          = brackets.getModule("command/Menus");
+        Menus          = brackets.getModule("command/Menus"),
+        StatusBar      = brackets.getModule("widgets/StatusBar"),
+        ExtensionUtils = brackets.getModule("utils/ExtensionUtils");
+
+
+    // Create status indicator
+    var $statusIndicators = $('#status-indicators'),
+        $indicator = $('<div />').attr('id', 'status-indicator-recognizer');
+    $statusIndicators.append($indicator);
+    $statusIndicators.find('.spinner').remove().appendTo($statusIndicators);
+    $indicator.html('Indicator ready').attr('class', 'is-active');
+
+
+    ExtensionUtils.loadStyleSheet(module, "main.less");
 
 
     // Function to run when the menu item is clicked
@@ -17,6 +30,7 @@ define(function (require, exports, module) {
             var insertionPos = editor.getCursorPos();
             editor.document.replaceRange("Hello, world!", insertionPos);
         }
+
     }
 
 
