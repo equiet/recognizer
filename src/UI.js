@@ -51,6 +51,18 @@ define(function (require, exports, module) {
             $indicator.html('Out of sync')
         };
 
+        // // Inspector connected
+        // statusActions['inspector-connected'] = function() {
+        //     $indicator.attr('class', 'is-active')
+        //     $indicator.html('Inspector connected')
+        // };
+
+        // // Inspector disconnected
+        // statusActions['inspector-disconnected'] = function() {
+        //     $indicator.attr('class', 'is-inactive')
+        //     $indicator.html('Inspector disconnected')
+        // };
+
         return {
             updateStatus: function(code) {
                 statusActions[code]()
