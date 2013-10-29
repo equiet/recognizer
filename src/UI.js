@@ -71,7 +71,7 @@ define(function (require, exports, module) {
 
     }())
 
-    exports.panel = (function() {
+    exports.panel = function() {
 
         var Resizer = brackets.getModule('utils/Resizer')
 
@@ -89,7 +89,6 @@ define(function (require, exports, module) {
         })
         $panel.trigger('panelResizeUpdate');
 
-
-    }())
+    }
 
 })
