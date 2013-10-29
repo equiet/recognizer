@@ -1,7 +1,6 @@
 define(function (require, exports, module) {
     'use strict';
 
-    // return;
 
     var ExtensionUtils  = brackets.getModule("utils/ExtensionUtils"),
         LiveDevelopment = brackets.getModule('LiveDevelopment/LiveDevelopment'),
@@ -28,40 +27,41 @@ define(function (require, exports, module) {
         console.log('scriptParsed', res)
     })
 
-    Inspector.on('connect', function() {
-        console.log('inspector connected')
-    })
 
-    var scriptId = null;
 
-    // Execute some code
+    var _tracerObjectId;
+
+    // Insert tracer into browser
     $(LiveDevelopment).on('statusChange', function(e, status) {
         if (status === 3 ) {
 
-            Inspector.Debugger.compileScript('console.log("this comes from the three");', 'somesourceurl', function(res) {
-                console.log('compileScript', res)
+            Inspector.Runtime.evaluate('__recognizer.connect()', function (res) {
 
-                scriptId = res.scriptId
-                console.log(scriptId);
+                if (!res.wasThrown) {
+                    _tracerObjectId = res.result.objectId;
+                    console.log('[recognizer] tracer retrieved', _tracerObjectId, res.result);
 
-                Inspector.Debugger.runScript(res.scriptId, function(res) {
-                    console.log('runScript', res)
-                })
+                    Inspector.Runtime.callFunctionOn(_tracerObjectId, '__recognizer.test', function (res) {
+                        console.log('[recognizer] test function called, expect confirmation', res);
+                    });
+
+                    setInterval(function () {
+
+                        Inspector.Runtime.callFunctionOn(_tracerObjectId, '__recognizer.getCallCount', function (res) {
+                            console.log('[recognizer] function called', res);
+                        });
+
+                    }, 1000);
 
 
-                // var currentDocument = DocumentManager.getCurrentDocument()
-                // console.log(ScriptAgent)
-                // var idfromurl = ScriptAgent.scriptForURL(currentDocument.file.fullPath)
+                } else {
+                    console.log('[recognizer] failed to retrieve tracer', res);
+                }
 
-                // console.log(ScriptAgent.scriptForURL(idfromurl))
-            })
+            });
 
-
-            // Inspector.getDebuggableWindows().then(function (response) {
-            //     console.log('windows:', response)
-            // })
         }
-    })
+    });
 
 
 
