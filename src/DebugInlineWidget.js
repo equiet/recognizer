@@ -4,8 +4,6 @@
 define(function (require, exports, module) {
     "use strict";
 
-    console.log('in required');
-
     // Load dependent modules
     var EditorManager       = brackets.getModule("editor/EditorManager"),
         KeyEvent            = brackets.getModule("utils/KeyEvent");
@@ -40,11 +38,48 @@ define(function (require, exports, module) {
 
 
         this.htmlContent = window.document.createElement("div");
-        this.$htmlContent = $(this.htmlContent).addClass("inline-widget");
+        this.$htmlContent = $(this.htmlContent).addClass("inline-widget recognizer-widget");
 
-        this.$htmlContent.html(require('text!src/log.html'));
+        var $table = this.addTable(this.$htmlContent);
+        var $group = this.addGroup($table);
+
+
+        // Populate with some data
+        var args = [];
+        args.push(null);
+        args.push("request");
+        args.push({object: 'object'});
+        args.push([1,2,3]);
+        for (var i = 0; i < 3; i++) {
+            var d = new Date();
+            this.addRow($group, d.getHours() + ':' + d.getMinutes() + ':' + d.getSeconds(), d.getMilliseconds(), args);
+        }
+
+        $group.clone().appendTo($table);
+
+        // this.$htmlContent.html(require('text!src/log.html'));
 
     }
+
+    InlineWidget.prototype.addTable = function ($container) {
+        return $('<table />').addClass('rw_table').appendTo($container);
+    };
+
+    InlineWidget.prototype.addGroup = function ($table) {
+        return $('<tbody />').addClass('rw_group').appendTo($table);
+    };
+
+    InlineWidget.prototype.addRow = function ($group, baseTime, milliseconds, args) {
+        var $row = $('<tr />');
+        $row.append('<th class="rw_time-base">' + baseTime + '</th>');
+        $row.append('<th class="rw_time-milli">.' + milliseconds + '</th>');
+        $row.append('<th class="rw_warnings"><i class="fa fa-exclamation-triangle"></i></th>');
+        args.forEach(function (val, i) {
+            $row.append('<td>' + val + '</td>');
+        });
+        return $row.appendTo($group);
+    };
+
     InlineWidget.prototype.htmlContent = null;
     InlineWidget.prototype.$htmlContent = null;
     InlineWidget.prototype.id = null;
@@ -54,7 +89,7 @@ define(function (require, exports, module) {
      * Initial height of inline widget in pixels. Can be changed later via hostEditor.setInlineWidgetHeight()
      * @type {number}
      */
-    // InlineWidget.prototype.height = 200;
+    InlineWidget.prototype.height = 140;
 
     /**
      * Closes this inline widget and all its contained Editors
@@ -87,8 +122,7 @@ define(function (require, exports, module) {
      */
     InlineWidget.prototype.onAdded = function () {
         $(this).triggerHandler("add");
-        console.log('add');
-        this.hostEditor.setInlineWidgetHeight(this, 200, true);
+        this.hostEditor.setInlineWidgetHeight(this, this.height, true);
     };
 
     /**
@@ -96,7 +130,6 @@ define(function (require, exports, module) {
      */
     InlineWidget.prototype.load = function (hostEditor) {
         this.hostEditor = hostEditor;
-        console.log('load');
     };
 
     /**

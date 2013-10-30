@@ -9,7 +9,6 @@ define(function (require, exports, module) {
         DocumentManager = brackets.getModule('document/DocumentManager'),
         EditorManager   = brackets.getModule('editor/EditorManager'),
         DebugInlineWidget    = require('src/DebugInlineWidget').InlineWidget;
-        // DebugInlineWidget2    = require('src/DebugInlineWidget').InlineWidget;
         // InlineColorEditor   = require("InlineColorEditor").InlineColorEditor;
 
         // ScriptAgent     = brackets.getModule('LiveDevelopment/Agents/ScriptAgent')

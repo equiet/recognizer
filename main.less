@@ -144,3 +144,75 @@
 		color: #999;
 	}
 }
+
+.recognizer-widget {
+	font-family: "Source Sans Pro";
+	margin: 10px 20px;
+	border-radius: 3px;
+	background: #fff;
+	box-shadow: inset 1px 1px 0 rgba(0,0,0,0.05), inset -1px -1px 0 rgba(0,0,0,0.05), inset 0 1px 3px rgba(0,0,0,0.1);
+	overflow: scroll;
+}
+.rw_table {
+	position: relative;
+	border-right: 1px solid rgba(0,0,0,0.06);
+
+	&:before {
+		content: "";
+		display: block;
+		position: absolute;
+		top: -3px;
+		left: 0;
+		width: 100%;
+		height: 3px;
+		box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+	}
+	td {
+		font-size: 12px;
+		padding: 3px 15px;
+		color: #111;
+		border: none;
+	}
+	tr:first-child {
+		td, th {
+			padding-top: 8px;
+		}
+	}
+	tr:last-child {
+		td, th {
+			padding-bottom: 8px;
+		}
+	}
+	th {
+		background: rgba(0,0,0,0.02);
+		padding: 3px 0;
+	}
+	tbody {
+		border-bottom: 1px solid rgba(0,0,0,0.04);
+	}
+}
+th.rw_time-base {
+	font-size: 0 !important;
+	font-weight: 600;
+	text-align: left;
+	padding-left: 12px;
+	padding-right: 7px;
+
+	.rw_table tr:first-child & {
+		font-size: 12px !important;
+	}
+}
+th.rw_time-mili {
+	font-size: 12px !important;
+	font-weight: 600;
+	color: #999;
+}
+th.rw_warnings {
+	border-right: 1px solid rgba(0,0,0,0.06);
+	padding: 3px 10px;
+
+	.fa-exclamation-triangle {
+		font-size: 10px;
+		color: @recognizerYellow;
+	}
+}
