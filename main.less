@@ -151,22 +151,67 @@
 	border-radius: 3px;
 	background: #fff;
 	box-shadow: inset 1px 1px 0 rgba(0,0,0,0.05), inset -1px -1px 0 rgba(0,0,0,0.05), inset 0 1px 3px rgba(0,0,0,0.1);
+	// overflow: scroll;
+
+	&.has-scroll-up .rw_table-scroll {
+		box-shadow: inset 0 2px 6px rgba(0,0,0,0.2);
+	}
+	// &.has-scroll-up:before {
+	// 	content: "";
+	// 	display: block;
+	// 	position: absolute;
+	// 	top: -3px;
+	// 	left: 0;
+	// 	width: 100%;
+	// 	height: 3px;
+	// 	box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+	// }
+
+	&.has-scroll-up:before {
+		content: "";
+		display: block;
+		position: absolute;
+		top: 100%;
+		left: 0;
+		width: 100%;
+		height: 0;
+		box-shadow: 0 -2px 6px rgba(0,0,0,0.2);
+	}
+}
+.rw_scroll-container {
+	position: absolute;
+	height: 100%;
+
+	&.has-scroll-up:before {
+		content: "";
+		display: block;
+		position: absolute;
+		top: -5px;
+		left: 0;
+		width: 100%;
+		height: 5px;
+		box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+	}
+	&.has-scroll-down:after {
+		content: "";
+		display: block;
+		position: absolute;
+		top: 100%;
+		left: 0;
+		width: 100%;
+		height: 5px;
+		box-shadow: 0 -2px 6px rgba(0,0,0,0.2);
+	}
+}
+.rw_scroll-content {
+	width: 100%;
+	height: 100%;
 	overflow: scroll;
 }
 .rw_table {
 	position: relative;
 	border-right: 1px solid rgba(0,0,0,0.06);
 
-	&:before {
-		content: "";
-		display: block;
-		position: absolute;
-		top: -3px;
-		left: 0;
-		width: 100%;
-		height: 3px;
-		box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-	}
 	td {
 		font-size: 12px;
 		padding: 3px 15px;

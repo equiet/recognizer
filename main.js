@@ -59,9 +59,16 @@ define(function (require, exports, module) {
 
                     setInterval(function () {
 
-                        Inspector.Runtime.callFunctionOn(_tracerObjectId, '__recognizer.getCallCount', function (res) {
+                        Inspector.Runtime.callFunctionOn(_tracerObjectId, '__recognizer.getCalls', function (res) {
                             // console.log('[recognizer] function called', res);
                             console.log('[recognizer]', 'calls:', res)
+                            var args = JSON.parse(res.result.value);
+                            // console.log(args);
+                            args.forEach(function (val, index) {
+                                console.log(val);
+                                var d = new Date();
+                                debugInlineWidget.addRow(debugInlineWidget.$lastGroup, d.getHours() + ':' + d.getMinutes() + ':' + d.getSeconds(), d.getMilliseconds(), val.args);
+                            });
                         });
 
                     }, 3000);
@@ -97,6 +104,7 @@ define(function (require, exports, module) {
     // var Agent              = require("./src/Agent");
     // var AgentManager       = require("./src/AgentManager");
 
+    var debugInlineWidget;
 
     function _init() {
 
@@ -110,20 +118,20 @@ define(function (require, exports, module) {
         console.log(EditorManager.getInlineEditors());
 
 
-        EditorManager.registerInlineEditProvider(function (hostEditor, pos) {
-            inlineColorEditor = new DebugInlineWidget();
-            inlineColorEditor.load(hostEditor);
+        // EditorManager.registerInlineEditProvider(function (hostEditor, pos) {
+        //     inlineColorEditor = new DebugInlineWidget();
+        //     inlineColorEditor.load(hostEditor);
 
-            result = new $.Deferred();
-            result.resolve(inlineColorEditor);
-            return result.promise();
-        });
+        //     result = new $.Deferred();
+        //     result.resolve(inlineColorEditor);
+        //     return result.promise();
+        // });
 
 
 
-        var debugInlineWidget = new DebugInlineWidget();
+        debugInlineWidget = new DebugInlineWidget();
         debugInlineWidget.load(EditorManager.getCurrentFullEditor());
-        EditorManager.getCurrentFullEditor().addInlineWidget({line: 269}, debugInlineWidget, true).done(function () {
+        EditorManager.getCurrentFullEditor().addInlineWidget({line: 31}, debugInlineWidget, true).done(function () {
             console.log('widget added');
         });
 
