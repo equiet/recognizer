@@ -37,7 +37,7 @@
 define(function (require, exports, module) {
     var Agent     = require("./Agent");
     var AppInit   = brackets.getModule("utils/AppInit");
-    // var Fsm       = require("./fsm").Fsm;
+    var Fsm       = require("./fsm").Fsm;
     var Inspector = brackets.getModule("LiveDevelopment/Inspector/Inspector");
     // var main      = require("../main");
 
@@ -56,83 +56,83 @@ define(function (require, exports, module) {
     var _nodeHitCounts = {};
     var _nodeExceptionCounts = {};
 
-    // var fsm = new Fsm({
-    //     waitingForApp: {
-    //         appReady:              function () { _resetAll(); this.goto("disconnected"); },
-    //     },
-    //     disconnected: {
-    //         enter:                 function () { _resetConnection(); },
-    //         inspectorConnected:    function () { this.goto("waitingForPage"); },
-    //     },
-    //     waitingForPage: {
-    //         enter:                 function () { _resetConnection(); },
-    //         gotDocument:           function () { this.goto("initializingTracer"); },
-    //         inspectorDisconnected: function () { this.goto("disconnected"); },
-    //     },
-    //     initializingTracer: {
-    //         enter:                 function () { _resetConnection(); _connectToTracer(); },
-    //         tracerConnected:       function () { this.goto("initializingHits"); },
-    //         tracerConnectFailed:   function () { this.goto("waitingForPage"); },
+    var fsm = new Fsm({
+        waitingForApp: {
+            appReady:              function () { _resetAll(); this.goto("disconnected"); },
+        },
+        disconnected: {
+            enter:                 function () { _resetConnection(); },
+            inspectorConnected:    function () { this.goto("waitingForPage"); },
+        },
+        waitingForPage: {
+            enter:                 function () { _resetConnection(); },
+            gotDocument:           function () { this.goto("initializingTracer"); },
+            inspectorDisconnected: function () { this.goto("disconnected"); },
+        },
+        initializingTracer: {
+            enter:                 function () { _resetConnection(); _connectToTracer(); },
+            tracerConnected:       function () { this.goto("initializingHits"); },
+            tracerConnectFailed:   function () { this.goto("waitingForPage"); },
 
-    //         gotDocument:           function () { this.goto("initializingTracer"); }, // XXX: I think this case is tricky
-    //         inspectorDisconnected: function () { this.goto("disconnected"); },
-    //     },
-    //     initializingHits: {
-    //         enter:                 function () { _trackHits(); },
-    //         trackingHits:          function () { this.goto("initializingExceptions"); },
-    //         trackingHitsFailed:    function () { this.goto("disconnected"); },
+            gotDocument:           function () { this.goto("initializingTracer"); }, // XXX: I think this case is tricky
+            inspectorDisconnected: function () { this.goto("disconnected"); },
+        },
+        initializingHits: {
+            enter:                 function () { _trackHits(); },
+            trackingHits:          function () { this.goto("initializingExceptions"); },
+            trackingHitsFailed:    function () { this.goto("disconnected"); },
 
-    //         gotDocument:           function () { this.goto("initializingTracer"); }, // XXX: I think this case is tricky
-    //         inspectorDisconnected: function () { this.goto("disconnected"); },
-    //     },
-    //     initializingExceptions: {
-    //         enter:                 function () { _trackExceptions(); },
-    //         trackingExceptions:    function () { this.goto("connected"); },
-    //         trackingExceptionsFailed: function () { this.goto("disconnected"); },
+            gotDocument:           function () { this.goto("initializingTracer"); }, // XXX: I think this case is tricky
+            inspectorDisconnected: function () { this.goto("disconnected"); },
+        },
+        initializingExceptions: {
+            enter:                 function () { _trackExceptions(); },
+            trackingExceptions:    function () { this.goto("connected"); },
+            trackingExceptionsFailed: function () { this.goto("disconnected"); },
 
-    //         gotDocument:           function () { this.goto("initializingTracer"); }, // XXX: I think this case is tricky
-    //         inspectorDisconnected: function () { this.goto("disconnected"); },
-    //     },
-    //     connected: {
-    //         enter:                 function () { $exports.triggerHandler("connect"); _sendQueuedEvents(); },
-    //         exit:                  function () { _onDisconnect(); },
+            gotDocument:           function () { this.goto("initializingTracer"); }, // XXX: I think this case is tricky
+            inspectorDisconnected: function () { this.goto("disconnected"); },
+        },
+        connected: {
+            enter:                 function () { $exports.triggerHandler("connect"); _sendQueuedEvents(); },
+            exit:                  function () { _onDisconnect(); },
 
-    //         gotDocument:           function () { this.goto("initializingTracer"); },
-    //         inspectorDisconnected: function () { this.goto("disconnected"); },
-    //     },
-    // }, "waitingForApp");
+            gotDocument:           function () { this.goto("initializingTracer"); },
+            inspectorDisconnected: function () { this.goto("disconnected"); },
+        },
+    }, "waitingForApp");
 
-    // function _connectToTracer() {
-    //     Inspector.Runtime.evaluate(TRACER_NAME + ".connect()", function (res) {
-    //         if (!res.wasThrown) {
-    //             _tracerObjectId = res.result.objectId;
-    //             fsm.trigger("tracerConnected");
-    //         } else {
-    //             console.log("failed to get tracer instance", res);
-    //             fsm.trigger("tracerConnectFailed");
-    //         }
-    //     });
-    // }
+    function _connectToTracer() {
+        Inspector.Runtime.evaluate(TRACER_NAME + ".connect()", function (res) {
+            if (!res.wasThrown) {
+                _tracerObjectId = res.result.objectId;
+                fsm.trigger("tracerConnected");
+            } else {
+                console.log("failed to get tracer instance", res);
+                fsm.trigger("tracerConnectFailed");
+            }
+        });
+    }
 
-    // function _trackHits() {
-    //     trackHits(function (handle) {
-    //         if (handle === undefined) {
-    //             fsm.trigger("trackingHitsFailed");
-    //         } else {
-    //             _defaultTrackingHandle = handle;
-    //             fsm.trigger("trackingHits");
-    //         }
-    //     });
-    // }
+    function _trackHits() {
+        trackHits(function (handle) {
+            if (handle === undefined) {
+                fsm.trigger("trackingHitsFailed");
+            } else {
+                _defaultTrackingHandle = handle;
+                fsm.trigger("trackingHits");
+            }
+        });
+    }
 
-    // function _trackExceptions() {
-    //     trackExceptions().done(function (handle) {
-    //         _defaultExceptionTrackingHandle = handle;
-    //         fsm.trigger("trackingExceptions");
-    //     }).fail(function () {
-    //         fsm.trigger("trackingExceptionsFailed");
-    //     });
-    // }
+    function _trackExceptions() {
+        trackExceptions().done(function (handle) {
+            _defaultExceptionTrackingHandle = handle;
+            fsm.trigger("trackingExceptions");
+        }).fail(function () {
+            fsm.trigger("trackingExceptionsFailed");
+        });
+    }
 
     function _onDisconnect() {
         $exports.triggerHandler("disconnect");
@@ -173,11 +173,11 @@ define(function (require, exports, module) {
         }
     }
 
-    // function _loadEventFired(event, res) {
-    //     Inspector.DOM.getDocument(function onGetDocument(res) {
-    //         fsm.trigger("gotDocument");
-    //     });
-    // }
+    function _loadEventFired(event, res) {
+        Inspector.DOM.getDocument(function onGetDocument(res) {
+            fsm.trigger("gotDocument");
+        });
+    }
 
     function _triggerReceivedScriptInfo(path) {
         if (isReady()) {
@@ -461,7 +461,7 @@ define(function (require, exports, module) {
         });
     }
 
-    // AppInit.appReady(function () { fsm.trigger("appReady"); });
+    AppInit.appReady(function () { fsm.trigger("appReady"); });
 
     // exports
     exports.init = init;

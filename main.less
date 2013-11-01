@@ -232,8 +232,16 @@
 		background: rgba(0,0,0,0.02);
 		padding: 3px 0;
 	}
-	tbody {
-		border-bottom: 1px solid rgba(0,0,0,0.04);
+}
+.rw_group {
+	border-bottom: 1px solid rgba(0,0,0,0.04);
+
+	tr {
+		display: none;
+
+		&:nth-child(-n+3) {
+			display: table-row;
+		}
 	}
 }
 th.rw_time-base {

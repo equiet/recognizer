@@ -8,10 +8,9 @@ define(function (require, exports, module) {
         AppInit         = brackets.getModule('utils/AppInit'),
         DocumentManager = brackets.getModule('document/DocumentManager'),
         EditorManager   = brackets.getModule('editor/EditorManager'),
-        DebugInlineWidget    = require('src/DebugInlineWidget').InlineWidget;
+        DebugInlineWidget    = require('src/DebugInlineWidget').InlineWidget,
+        Agent = require('src/Agent');
         // InlineColorEditor   = require("InlineColorEditor").InlineColorEditor;
-
-        // ScriptAgent     = brackets.getModule('LiveDevelopment/Agents/ScriptAgent')
 
     var UI = require('src/UI');
 
@@ -24,6 +23,8 @@ define(function (require, exports, module) {
 
 
 
+
+    var inlineWidgets = {};
 
 
 
@@ -61,17 +62,29 @@ define(function (require, exports, module) {
 
                         Inspector.Runtime.callFunctionOn(_tracerObjectId, '__recognizer.getCalls', function (res) {
                             // console.log('[recognizer] function called', res);
-                            console.log('[recognizer]', 'calls:', res)
+                            // console.log('[recognizer]', 'calls:', res)
                             var args = JSON.parse(res.result.value);
                             // console.log(args);
                             args.forEach(function (val, index) {
-                                console.log(val);
+                                // console.log(val);
                                 var d = new Date();
-                                debugInlineWidget.addRow(debugInlineWidget.$lastGroup, d.getHours() + ':' + d.getMinutes() + ':' + d.getSeconds(), d.getMilliseconds(), val.args);
+
+                                if (!inlineWidgets[val.line]) {
+                                    inlineWidgets[val.line] = new DebugInlineWidget();
+                                    inlineWidgets[val.line].load(EditorManager.getCurrentFullEditor());
+                                    EditorManager.getCurrentFullEditor().addInlineWidget({line: val.line}, inlineWidgets[val.line], true).done(function () {
+                                        inlineWidgets[val.line].addRow(inlineWidgets[val.line].$lastGroup, d.getHours() + ':' + d.getMinutes() + ':' + d.getSeconds(), d.getMilliseconds(), val.args);
+                                    });
+                                } else {
+                                    inlineWidgets[val.line].addRow(inlineWidgets[val.line].$lastGroup, d.getHours() + ':' + d.getMinutes() + ':' + d.getSeconds(), d.getMilliseconds(), val.args);
+                                }
+
+
+
                             });
                         });
 
-                    }, 3000);
+                    }, 100);
 
 
                 } else {
@@ -80,20 +93,27 @@ define(function (require, exports, module) {
 
             });
 
-            // Inspector.Runtime.evaluate("__tracer.connect()", function (res) {
-            //     if (!res.wasThrown) {
-            //         _theseusObjectId = res.result.objectId;
+            Inspector.Runtime.evaluate("__tracer.connect()", function (res) {
+                if (!res.wasThrown) {
+                    _theseusObjectId = res.result.objectId;
 
-            //         setInterval(function () {
-            //             Inspector.Runtime.callFunctionOn(_theseusObjectId, "__tracer.trackNodes", [], true, true, function (res) {
-            //                 console.log('[recognizer] theseus trackNodes called', res);
-            //             });
-            //         }, 3000);
+                    Inspector.Runtime.callFunctionOn(_theseusObjectId, "__tracer.trackNodes", [], true, true, function (res) {
 
-            //     } else {
-            //         console.log("failed to get tracer instance", res);
-            //     }
-            // });
+                        var id = setInterval(function () {
+                            Inspector.Runtime.callFunctionOn(_theseusObjectId, "__tracer.newNodes", [/*handle*/], function (res) {
+                                console.log(res);
+                                // if (nodes) {
+                                //     _addNodes(nodes);
+                                // }
+                            });
+                        }, 1000);
+
+                    });
+
+                } else {
+                    console.log("failed to get tracer instance", res);
+                }
+            });
 
 
         }
@@ -106,16 +126,16 @@ define(function (require, exports, module) {
 
     var debugInlineWidget;
 
+
     function _init() {
 
         // LiveDevelopment.enableAgent('script')
 
+        Agent.init();
+
+        UI.panel()
+
         console.log('initalized')
-
-
-        console.log(EditorManager.getCurrentFullEditor());
-        console.log(EditorManager.getInlineEditors());
-        console.log(EditorManager.getInlineEditors());
 
 
         // EditorManager.registerInlineEditProvider(function (hostEditor, pos) {
@@ -129,11 +149,11 @@ define(function (require, exports, module) {
 
 
 
-        debugInlineWidget = new DebugInlineWidget();
-        debugInlineWidget.load(EditorManager.getCurrentFullEditor());
-        EditorManager.getCurrentFullEditor().addInlineWidget({line: 31}, debugInlineWidget, true).done(function () {
-            console.log('widget added');
-        });
+        // debugInlineWidget = new DebugInlineWidget();
+        // debugInlineWidget.load(EditorManager.getCurrentFullEditor());
+        // EditorManager.getCurrentFullEditor().addInlineWidget({line: 31}, debugInlineWidget, true).done(function () {
+        //     console.log('widget added');
+        // });
 
         // var currentDocument = DocumentManager.getCurrentDocument()
         // console.log(currentDocument)
