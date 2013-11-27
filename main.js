@@ -1,7 +1,6 @@
 define(function (require, exports, module) {
     'use strict';
 
-
     var ExtensionUtils  = brackets.getModule("utils/ExtensionUtils"),
         LiveDevelopment = brackets.getModule('LiveDevelopment/LiveDevelopment'),
         Inspector       = brackets.getModule('LiveDevelopment/Inspector/Inspector'),
@@ -18,7 +17,6 @@ define(function (require, exports, module) {
 
     ExtensionUtils.loadStyleSheet(module, 'main.less');
     ExtensionUtils.loadStyleSheet(module, 'src/styles/font-awesome.css');
-
 
 
 
@@ -50,29 +48,47 @@ define(function (require, exports, module) {
 
             Inspector.Runtime.evaluate('__recognizer.connect()', function (res) {
 
+
+
                 if (!res.wasThrown) {
                     _tracerObjectId = res.result.objectId;
                     console.log('[recognizer] tracer retrieved', _tracerObjectId, res.result);
+
 
                     Inspector.Runtime.callFunctionOn(_tracerObjectId, '__recognizer.test', function (res) {
                         console.log('[recognizer] test function called, expect confirmation', res);
                     });
 
+
                     setInterval(function () {
 
                         Inspector.Runtime.callFunctionOn(_tracerObjectId, '__recognizer.getCalls', function (res) {
+
+
+
+
                             // console.log('[recognizer] function called', res);
                             // console.log('[recognizer]', 'calls:', res)
                             var args = JSON.parse(res.result.value);
                             // console.log(args);
                             args.forEach(function (val, index) {
                                 // console.log(val);
+                                //
+
+
                                 var d = new Date();
 
                                 if (!inlineWidgets[val.line]) {
+
                                     inlineWidgets[val.line] = new DebugInlineWidget();
+
                                     inlineWidgets[val.line].load(EditorManager.getCurrentFullEditor());
-                                    EditorManager.getCurrentFullEditor().addInlineWidget({line: val.line}, inlineWidgets[val.line], true).done(function () {
+
+                                    // console.log(EditorManager);
+                                    // console.log(inlineWidgets[val.line]);
+                                    // console.log(EditorManager.getCurrentFullEditor().addInlineWidget({line: val.line, ch: 0}, inlineWidgets[val.line], true));
+                                    EditorManager.getCurrentFullEditor().addInlineWidget({line: val.line, ch: 0}, inlineWidgets[val.line], true).done(function () {
+                                        // return;
                                         inlineWidgets[val.line].addRow(inlineWidgets[val.line].$lastGroup, d.getHours() + ':' + d.getMinutes() + ':' + d.getSeconds(), d.getMilliseconds(), val.args);
                                     });
                                 } else {
@@ -96,6 +112,9 @@ define(function (require, exports, module) {
             Inspector.Runtime.evaluate("__tracer.connect()", function (res) {
                 if (!res.wasThrown) {
                     _theseusObjectId = res.result.objectId;
+
+
+                    return;
 
                     Inspector.Runtime.callFunctionOn(_theseusObjectId, "__tracer.trackNodes", [], true, true, function (res) {
 
@@ -133,7 +152,7 @@ define(function (require, exports, module) {
 
         Agent.init();
 
-        UI.panel()
+        // UI.panel()
 
         console.log('initalized')
 
