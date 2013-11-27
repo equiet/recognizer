@@ -32,7 +32,7 @@ define(function (require, exports, module) {
     }
     Fsm.prototype = {
         goto: function (state) {
-            console.log("[theseus rec] fsm: -> " + state);
+            console.log("[recognizer] fsm: -> " + state);
             this.trigger("exit");
             this.state = state;
             this.trigger("enter");

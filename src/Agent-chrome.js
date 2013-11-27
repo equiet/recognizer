@@ -221,7 +221,7 @@ define(function (require, exports, module) {
         $(Inspector.DOM).on("attributeModified", _onAttributeModified);
 
         Inspector.Page.enable();
-        // $(Inspector.Page).on("loadEventFired", _loadEventFired);
+        $(Inspector.Page).on("loadEventFired", _loadEventFired);
 
         // AJAX testing
 

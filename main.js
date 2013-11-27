@@ -1,25 +1,27 @@
+/*globals define, console*/
+
 define(function (require, exports, module) {
     'use strict';
 
-    var ExtensionUtils  = brackets.getModule("utils/ExtensionUtils"),
+    var ExtensionUtils  = brackets.getModule('utils/ExtensionUtils'),
         LiveDevelopment = brackets.getModule('LiveDevelopment/LiveDevelopment'),
         Inspector       = brackets.getModule('LiveDevelopment/Inspector/Inspector'),
         AppInit         = brackets.getModule('utils/AppInit'),
         DocumentManager = brackets.getModule('document/DocumentManager'),
         EditorManager   = brackets.getModule('editor/EditorManager'),
         DebugInlineWidget    = require('src/DebugInlineWidget').InlineWidget,
-        Agent = require('src/Agent');
-        // InlineColorEditor   = require("InlineColorEditor").InlineColorEditor;
+        Agent = require('src/Agent'),
+        AgentManager = require('src/AgentManager'),
+        UI = require('src/UI');
 
-    var UI = require('src/UI');
-
+    var _logHandle;
 
 
     ExtensionUtils.loadStyleSheet(module, 'main.less');
     ExtensionUtils.loadStyleSheet(module, 'src/styles/font-awesome.css');
 
 
-
+    var hostEditor;
 
 
     var inlineWidgets = {};
@@ -31,10 +33,6 @@ define(function (require, exports, module) {
         UI.statusIndicator.updateStatus(status);
     });
 
-
-    $(Inspector.Debugger).on("scriptParsed", function(res) {
-        console.log('scriptParsed', res)
-    })
 
 
 
@@ -60,21 +58,15 @@ define(function (require, exports, module) {
                     });
 
 
+
+
+
                     setInterval(function () {
 
                         Inspector.Runtime.callFunctionOn(_tracerObjectId, '__recognizer.getCalls', function (res) {
 
-
-
-
-                            // console.log('[recognizer] function called', res);
-                            // console.log('[recognizer]', 'calls:', res)
                             var args = JSON.parse(res.result.value);
-                            // console.log(args);
                             args.forEach(function (val, index) {
-                                // console.log(val);
-                                //
-
 
                                 var d = new Date();
 
@@ -84,18 +76,12 @@ define(function (require, exports, module) {
 
                                     inlineWidgets[val.line].load(EditorManager.getCurrentFullEditor());
 
-                                    // console.log(EditorManager);
-                                    // console.log(inlineWidgets[val.line]);
-                                    // console.log(EditorManager.getCurrentFullEditor().addInlineWidget({line: val.line, ch: 0}, inlineWidgets[val.line], true));
-                                    EditorManager.getCurrentFullEditor().addInlineWidget({line: val.line, ch: 0}, inlineWidgets[val.line], true).done(function () {
-                                        // return;
+                                    hostEditor.addInlineWidget({line: val.line, ch: 20}, inlineWidgets[val.line], true).done(function () {
                                         inlineWidgets[val.line].addRow(inlineWidgets[val.line].$lastGroup, d.getHours() + ':' + d.getMinutes() + ':' + d.getSeconds(), d.getMilliseconds(), val.args);
                                     });
                                 } else {
                                     inlineWidgets[val.line].addRow(inlineWidgets[val.line].$lastGroup, d.getHours() + ':' + d.getMinutes() + ':' + d.getSeconds(), d.getMilliseconds(), val.args);
                                 }
-
-
 
                             });
                         });
@@ -109,30 +95,27 @@ define(function (require, exports, module) {
 
             });
 
-            Inspector.Runtime.evaluate("__tracer.connect()", function (res) {
-                if (!res.wasThrown) {
-                    _theseusObjectId = res.result.objectId;
+            // Inspector.Runtime.evaluate("__tracer.connect()", function (res) {
+            //     if (!res.wasThrown) {
+            //         _theseusObjectId = res.result.objectId;
 
+            //         Inspector.Runtime.callFunctionOn(_theseusObjectId, "__tracer.trackNodes", [], true, true, function (res) {
 
-                    return;
+            //             var id = setInterval(function () {
+            //                 Inspector.Runtime.callFunctionOn(_theseusObjectId, "__tracer.newNodes", [/*handle*/], function (res) {
+            //                     console.log(res);
+            //                     // if (nodes) {
+            //                     //     _addNodes(nodes);
+            //                     // }
+            //                 });
+            //             }, 1000);
 
-                    Inspector.Runtime.callFunctionOn(_theseusObjectId, "__tracer.trackNodes", [], true, true, function (res) {
+            //         });
 
-                        var id = setInterval(function () {
-                            Inspector.Runtime.callFunctionOn(_theseusObjectId, "__tracer.newNodes", [/*handle*/], function (res) {
-                                console.log(res);
-                                // if (nodes) {
-                                //     _addNodes(nodes);
-                                // }
-                            });
-                        }, 1000);
-
-                    });
-
-                } else {
-                    console.log("failed to get tracer instance", res);
-                }
-            });
+            //     } else {
+            //         console.log("failed to get tracer instance", res);
+            //     }
+            // });
 
 
         }
@@ -140,69 +123,116 @@ define(function (require, exports, module) {
 
 
 
-    // var Agent              = require("./src/Agent");
-    // var AgentManager       = require("./src/AgentManager");
-
     var debugInlineWidget;
+
+
+    var _loggedNodes = [], _loggedEventNames = [], _loggingExceptions = false, _loggingConsoleLogs = false;
 
 
     function _init() {
 
-        // LiveDevelopment.enableAgent('script')
+        hostEditor = EditorManager.getCurrentFullEditor();
+
+        // var $bookmark = $('<div />').css('background', '#11f').html('bookmark');
+        // var testBookmark = hostEditor._codeMirror.addWidget({line: 8, ch: 14}, $bookmark.get(0));
+
+        var $bookmark = $('<span />').addClass('recognizer-counter').text('23');
+        var marker = hostEditor._codeMirror.markText({line: 10, ch: 14}, {line: 10, ch: 15}, {replacedWith: $bookmark.get(0), readOnly: true});
+
 
         Agent.init();
+        AgentManager.init();
 
         // UI.panel()
 
-        console.log('initalized')
+
+        setInterval(function () {
+            if (Agent.isReady()) {
+                // TODO: don't call again if still waiting on a response
+                Agent.refreshHitCounts(function (hits, hitDeltas) {
+
+                    console.log('hits:', hits);
+                    console.log('hitDeltas:', hitDeltas);
+
+                    // update the call counts in the sidebar
+                    // for (var id in hitDeltas) {
+                    //     var count = hits[id] || 0;
+                    //     console.log('count', count);
+                    //     // var html = " " + (count === 0 ? Strings.UI_NO_CALLS : (count === 1 ? Strings.UI_SINGLE_CALL : StringUtils.format(Strings.UI_MULTIPLE_CALLS, count)));
+                    //     // _getNodeMarker(id).toggleClass("none", count === 0)
+                    //     //                   .toggleClass("uninitialized", false)
+                    //     //                   .find(".counts").html(html);
+                    // }
+
+                    // update call counts that were off-screen but now are back
+                    // var uninitialized = $(".CodeMirror").find(".theseus-call-count.uninitialized");
+                    // uninitialized.each(function () {
+                    //     $(this).toggleClass("uninitialized", false);
+                    //     var id = $(this).attr("data-node-id");
+                    //     var count = hits[id] || 0;
+                    //     var html = " " + (count === 0 ? Strings.UI_NO_CALLS : (count === 1 ? Strings.UI_SINGLE_CALL : StringUtils.format(Strings.UI_MULTIPLE_CALLS, count)));
+                    //     _getNodeMarker(id).toggleClass("none", count === 0)
+                    //                       .toggleClass("set", _loggedNodes.indexOf(id) !== -1)
+                    //                       .toggleClass("uninitialized", false)
+                    //                       .find(".counts").html(html);
+                    // });
+
+                });
 
 
-        // EditorManager.registerInlineEditProvider(function (hostEditor, pos) {
-        //     inlineColorEditor = new DebugInlineWidget();
-        //     inlineColorEditor.load(hostEditor);
+                Agent.refreshExceptionCounts(function (counts, deltas) {
 
-        //     result = new $.Deferred();
-        //     result.resolve(inlineColorEditor);
-        //     return result.promise();
-        // });
+                    // console.log('counts:', counts);
+                    // console.log('deltas:', deltas);
+
+                    // // add the 'exception' class to all the pills that threw exceptions this cycle
+                    // for (var id in deltas) {
+                    //     _getNodeMarker(id).addClass("exception")
+                    //                       .toggleClass("uninitialized-exceptions", false);
+                    // }
+
+                    // // update the pills that were reset because they scrolled off-screen
+                    // var uninitialized = $(".CodeMirror").find(".theseus-call-count.uninitialized-exceptions");
+                    // uninitialized.each(function () {
+                    //     var id = $(this).attr("data-node-id");
+                    //     if (id in counts) {
+                    //         _getNodeMarker(id).addClass("exception")
+                    //                           .toggleClass("uninitialized-exceptions", false);
+                    //     }
+                    // });
+                    //
+                });
+
+                // if (_logHandle !== undefined) {
+                //     Agent.refreshLogs(_logHandle, 20, function (results) {
+                //         if (results && results.length > 0) {
+                //             _variablesPanel.appendLogs(results);
+                //         }
+                //     });
+                // }
+            }
+        }, 2000);
 
 
+        // setInterval(function() {
+        //     if (Agent.isReady()) {
 
-        // debugInlineWidget = new DebugInlineWidget();
-        // debugInlineWidget.load(EditorManager.getCurrentFullEditor());
-        // EditorManager.getCurrentFullEditor().addInlineWidget({line: 31}, debugInlineWidget, true).done(function () {
-        //     console.log('widget added');
-        // });
+        //         Agent.trackLogs({
+        //             ids: _loggedNodes,
+        //             eventNames: _loggedEventNames,
+        //             exceptions: _loggingExceptions,
+        //             logs: _loggingConsoleLogs,
+        //         }, function (handle) {
+        //             _logHandle = handle;
+        //             console.log('handle', handle);
+        //             console.log(_loggedNodes);
+        //             console.log(_loggedEventNames);
+        //         });
 
-        // var currentDocument = DocumentManager.getCurrentDocument()
-        // console.log(currentDocument)
-        // // var idfromurl = ScriptAgent.scriptForUrl(currentDocument.file.fullPath)
-        // // console.log(idfromurl)
-        // $(currentDocument).on('change', function(e, doc, changeList) {
-        //     console.log('change', arguments)
-        //     // if (!scriptId) return;
-        //     //console.log('about to change script source', scriptId, doc.getText())
-        //     // Inspector.Debugger.setScriptSource(idfromurl, doc.getText(), false, function(res) {
-        //     //     console.log('call frames:', res.callFrames, 'result:', res.result)
-        //     // })
-        // })
+        //     }
+        // }, 1000);
 
-        $(DocumentManager).on('currentDocumentChange', function() {
-            console.log('currentDocumentChange', arguments)
-        })
-        // EditorManager.registerInlineEditProvider(function() { console.log('abc2'); });
 
-            // console.log(ScriptAgent.scriptForUrl())
-
-        // ProxyProvider.init();
-        // Agent.init();
-        // AgentManager.init();
-        // EditorInterface.init();
-        // UI.init();
-        // Panel.init();
-        // EpochPanel.init();
-        // FileCallGraphPanel.init();
-        //
     }
 
 
