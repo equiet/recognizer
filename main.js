@@ -12,7 +12,8 @@ define(function (require, exports, module) {
         DebugInlineWidget    = require('src/DebugInlineWidget').InlineWidget,
         Agent = require('src/Agent'),
         AgentManager = require('src/AgentManager'),
-        UI = require('src/UI');
+        UI = require('src/UI'),
+        CounterManager = require('src/CounterManager');
 
     var _logHandle;
 
@@ -136,10 +137,6 @@ define(function (require, exports, module) {
         // var $bookmark = $('<div />').css('background', '#11f').html('bookmark');
         // var testBookmark = hostEditor._codeMirror.addWidget({line: 8, ch: 14}, $bookmark.get(0));
 
-        var $bookmark = $('<span />').addClass('recognizer-counter').text('23');
-        var marker = hostEditor._codeMirror.markText({line: 10, ch: 14}, {line: 10, ch: 15}, {replacedWith: $bookmark.get(0), readOnly: true});
-
-
         Agent.init();
         AgentManager.init();
 
@@ -153,6 +150,12 @@ define(function (require, exports, module) {
 
                     console.log('hits:', hits);
                     console.log('hitDeltas:', hitDeltas);
+
+                    for (var id in hits) {
+                        if (hits.hasOwnProperty(id)) {
+                            CounterManager.updateCounter(id, hits[id]);
+                        }
+                    }
 
                     // update the call counts in the sidebar
                     // for (var id in hitDeltas) {
@@ -211,7 +214,7 @@ define(function (require, exports, module) {
                 //     });
                 // }
             }
-        }, 2000);
+        }, 100);
 
 
         // setInterval(function() {
