@@ -4,11 +4,11 @@ define(function (require, exports, module) {
 	var EditorManager = brackets.getModule('editor/EditorManager');
 
 	function CounterWidget(position) {
-		this.$el = $('<span />').addClass('recognizer-counter').text('23');
-		this.marker = EditorManager.getCurrentFullEditor()._codeMirror.markText(
-			{line: position.line - 1, ch: position.ch},
-			{line: position.line - 1, ch: position.ch + 1},
-			{replacedWith: this.$el.get(0), readOnly: true}
+		var _codeMirror = EditorManager.getCurrentFullEditor()._codeMirror;
+		this.$el = $('<a href="#" />').addClass('recognizer-counter').text('23');
+		this.marker = _codeMirror.setBookmark(
+			{line: position.line - 1, ch: _codeMirror.lineInfo(position.line - 1).text.length},
+			{widget: this.$el.get(0)}
 		);
 	}
 

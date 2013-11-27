@@ -255,6 +255,16 @@ th.rw_warnings {
 	border-radius: 2px;
 	display: inline-block;
 	margin: 0 4px;
-	padding: 0 4px;
+	padding: 0 5px;
 	line-height: 16px;
+	pointer-events: all;
+	transition: background 0.2s;
+
+	&:hover,
+	&:focus {
+		background: darken(@recognizerBlue, 7%);
+		text-decoration: none;
+		color: #fff;
+		box-shadow: inset 0 -1px 0 rgba(0,0,0,0.2), 0 0 3px rgba(50,205,220,1);
+	}
 }
