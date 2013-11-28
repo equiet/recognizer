@@ -11,9 +11,10 @@ define(function (require, exports, module) {
         EditorManager   = brackets.getModule('editor/EditorManager'),
         DebugInlineWidget    = require('src/DebugInlineWidget').InlineWidget,
         Agent = require('src/Agent'),
+        AgentHandle = require('src/AgentHandle'),
         AgentManager = require('src/AgentManager'),
         UI = require('src/UI'),
-        CounterManager = require('src/CounterManager');
+        WidgetManager = require('src/WidgetManager');
 
     var _logHandle;
 
@@ -41,60 +42,60 @@ define(function (require, exports, module) {
     var _theseusObjectId;
 
 
+    var _loggedNodes = [], _loggedEventNames = [], _loggingExceptions = false, _loggingConsoleLogs = false;
+    var _logHandle;
+
+
     // Insert tracer into browser
     $(LiveDevelopment).on('statusChange', function(e, status) {
         if (status === 3 ) {
 
-            Inspector.Runtime.evaluate('__recognizer.connect()', function (res) {
+            // Inspector.Runtime.evaluate('__recognizer.connect()', function (res) {
+
+            //     if (!res.wasThrown) {
+            //         _tracerObjectId = res.result.objectId;
+            //         console.log('[recognizer] tracer retrieved', _tracerObjectId, res.result);
+
+            //         Inspector.Runtime.callFunctionOn(_tracerObjectId, '__recognizer.test', function (res) {
+            //             console.log('[recognizer] test function called, expect confirmation', res);
+            //         });
+
+            //         setInterval(function () {
+
+            //             Inspector.Runtime.callFunctionOn(_tracerObjectId, '__recognizer.getCalls', function (res) {
+
+            //                 var args = JSON.parse(res.result.value);
+            //                 args.forEach(function (val, index) {
+
+            //                     var d = new Date();
+
+            //                     if (!inlineWidgets[val.line]) {
+
+            //                         inlineWidgets[val.line] = new DebugInlineWidget();
+
+            //                         inlineWidgets[val.line].load(EditorManager.getCurrentFullEditor());
+
+            //                         hostEditor.addInlineWidget({line: val.line, ch: 20}, inlineWidgets[val.line], true).done(function () {
+            //                             inlineWidgets[val.line].addRow(inlineWidgets[val.line].$lastGroup, d.getHours() + ':' + d.getMinutes() + ':' + d.getSeconds(), d.getMilliseconds(), val.args);
+            //                         });
+            //                     } else {
+            //                         inlineWidgets[val.line].addRow(inlineWidgets[val.line].$lastGroup, d.getHours() + ':' + d.getMinutes() + ':' + d.getSeconds(), d.getMilliseconds(), val.args);
+            //                     }
+
+            //                 });
+            //             });
+
+            //         }, 100);
 
 
+            //     } else {
+            //         console.log('[recognizer] failed to retrieve tracer', res);
+            //     }
 
-                if (!res.wasThrown) {
-                    _tracerObjectId = res.result.objectId;
-                    console.log('[recognizer] tracer retrieved', _tracerObjectId, res.result);
-
-
-                    Inspector.Runtime.callFunctionOn(_tracerObjectId, '__recognizer.test', function (res) {
-                        console.log('[recognizer] test function called, expect confirmation', res);
-                    });
+            // });
+            //
 
 
-
-
-
-                    setInterval(function () {
-
-                        Inspector.Runtime.callFunctionOn(_tracerObjectId, '__recognizer.getCalls', function (res) {
-
-                            var args = JSON.parse(res.result.value);
-                            args.forEach(function (val, index) {
-
-                                var d = new Date();
-
-                                if (!inlineWidgets[val.line]) {
-
-                                    inlineWidgets[val.line] = new DebugInlineWidget();
-
-                                    inlineWidgets[val.line].load(EditorManager.getCurrentFullEditor());
-
-                                    hostEditor.addInlineWidget({line: val.line, ch: 20}, inlineWidgets[val.line], true).done(function () {
-                                        inlineWidgets[val.line].addRow(inlineWidgets[val.line].$lastGroup, d.getHours() + ':' + d.getMinutes() + ':' + d.getSeconds(), d.getMilliseconds(), val.args);
-                                    });
-                                } else {
-                                    inlineWidgets[val.line].addRow(inlineWidgets[val.line].$lastGroup, d.getHours() + ':' + d.getMinutes() + ':' + d.getSeconds(), d.getMilliseconds(), val.args);
-                                }
-
-                            });
-                        });
-
-                    }, 100);
-
-
-                } else {
-                    console.log('[recognizer] failed to retrieve tracer', res);
-                }
-
-            });
 
             // Inspector.Runtime.evaluate("__tracer.connect()", function (res) {
             //     if (!res.wasThrown) {
@@ -127,8 +128,6 @@ define(function (require, exports, module) {
     var debugInlineWidget;
 
 
-    var _loggedNodes = [], _loggedEventNames = [], _loggingExceptions = false, _loggingConsoleLogs = false;
-
 
     function _init() {
 
@@ -141,44 +140,28 @@ define(function (require, exports, module) {
         AgentManager.init();
 
         // UI.panel()
+        //
+
+
 
 
         setInterval(function () {
             if (Agent.isReady()) {
-                // TODO: don't call again if still waiting on a response
+
+
+
                 Agent.refreshHitCounts(function (hits, hitDeltas) {
 
-                    console.log('hits:', hits);
-                    console.log('hitDeltas:', hitDeltas);
+                    _loggedNodes = [];
 
                     for (var id in hits) {
                         if (hits.hasOwnProperty(id)) {
-                            CounterManager.updateCounter(id, hits[id]);
+                            _loggedNodes.push(id);
+                            if (WidgetManager.getWidget(id)) {
+                                WidgetManager.getWidget(id).counter.updateCounter(hits[id]);
+                            }
                         }
                     }
-
-                    // update the call counts in the sidebar
-                    // for (var id in hitDeltas) {
-                    //     var count = hits[id] || 0;
-                    //     console.log('count', count);
-                    //     // var html = " " + (count === 0 ? Strings.UI_NO_CALLS : (count === 1 ? Strings.UI_SINGLE_CALL : StringUtils.format(Strings.UI_MULTIPLE_CALLS, count)));
-                    //     // _getNodeMarker(id).toggleClass("none", count === 0)
-                    //     //                   .toggleClass("uninitialized", false)
-                    //     //                   .find(".counts").html(html);
-                    // }
-
-                    // update call counts that were off-screen but now are back
-                    // var uninitialized = $(".CodeMirror").find(".theseus-call-count.uninitialized");
-                    // uninitialized.each(function () {
-                    //     $(this).toggleClass("uninitialized", false);
-                    //     var id = $(this).attr("data-node-id");
-                    //     var count = hits[id] || 0;
-                    //     var html = " " + (count === 0 ? Strings.UI_NO_CALLS : (count === 1 ? Strings.UI_SINGLE_CALL : StringUtils.format(Strings.UI_MULTIPLE_CALLS, count)));
-                    //     _getNodeMarker(id).toggleClass("none", count === 0)
-                    //                       .toggleClass("set", _loggedNodes.indexOf(id) !== -1)
-                    //                       .toggleClass("uninitialized", false)
-                    //                       .find(".counts").html(html);
-                    // });
 
                 });
 
@@ -206,15 +189,38 @@ define(function (require, exports, module) {
                     //
                 });
 
-                // if (_logHandle !== undefined) {
-                //     Agent.refreshLogs(_logHandle, 20, function (results) {
-                //         if (results && results.length > 0) {
-                //             _variablesPanel.appendLogs(results);
-                //         }
-                //     });
-                // }
+
+                if (_logHandle !== undefined) {
+                    Agent.refreshLogs(_logHandle, 20, function (results) {
+                        if (results && results.length > 0) {
+                            results.forEach(function (result) {
+                                if (WidgetManager.getWidget(result.nodeId)) {
+                                    console.log(result.arguments);
+                                    result.arguments = result.arguments.map(function (arg) {
+                                        return arg.value.preview || arg.value.value;
+                                    });
+                                    WidgetManager.getWidget(result.nodeId).log.addRow(result.timestamp, result.arguments);
+                                }
+                            });
+                        }
+                    });
+                }
             }
         }, 100);
+
+
+        // TODO get all nodes at the beginning
+        setInterval(function () {
+            Agent.trackLogs({
+                ids: _loggedNodes,
+                eventNames: [],
+                exceptions: false,
+                logs: false,
+            }, function (handle) {
+                _logHandle = handle;
+            });
+        }, 2000);
+
 
 
         // setInterval(function() {

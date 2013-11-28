@@ -235,6 +235,7 @@ th.rw_time-mili {
 	font-size: 12px !important;
 	font-weight: 600;
 	color: #999;
+	text-align: left;
 }
 th.rw_warnings {
 	border-right: 1px solid rgba(0,0,0,0.06);
@@ -266,5 +267,10 @@ th.rw_warnings {
 		text-decoration: none;
 		color: #fff;
 		box-shadow: inset 0 -1px 0 rgba(0,0,0,0.2), 0 0 3px rgba(50,205,220,1);
+	}
+	&.is-active {
+		color: @recognizerBlue;
+		background: #fff;
+		box-shadow: inset 1px 1px 0 rgba(0,0,0,0.15), inset -1px -1px 0 rgba(0,0,0,0.15);
 	}
 }

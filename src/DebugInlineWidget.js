@@ -12,8 +12,10 @@ define(function (require, exports, module) {
      * @constructor
      *
      */
-    function InlineWidget() {
+    function InlineWidget(hostEditor) {
         var self = this;
+
+        this.hostEditor = hostEditor;
 
         // create the outer wrapper div
         // this.htmlContent = window.document.createElement("div");
@@ -43,6 +45,8 @@ define(function (require, exports, module) {
         var $scrollContainer = this.addScrollContainer(this.$htmlContent);
         var $table = this.addTable($scrollContainer);
         var $group = this.addGroup($table);
+
+        this.$lastGroup = $group;
 
         // Register scroll event
         $scrollContainer.on('scroll', function () {
@@ -76,6 +80,15 @@ define(function (require, exports, module) {
 
     }
 
+    InlineWidget.prototype.showToggle = function () {
+        if (this.height === 140) {
+            this.height = 0;
+        } else {
+            this.height = 140;
+        }
+        this.hostEditor.setInlineWidgetHeight(this, this.height, true);
+    };
+
     InlineWidget.prototype.addScrollContainer = function ($body) {
         var $container = $('<div />').addClass('rw_scroll-container').appendTo($body);
         return $('<div />').addClass('rw_scroll-content').appendTo($container);
@@ -102,7 +115,7 @@ define(function (require, exports, module) {
         for (i in args) {
             $row.append('<td>' + args[i] + '</td>');
         };
-        return $row.appendTo($group);
+        return $row.appendTo(this.$lastGroup);
     };
 
     InlineWidget.prototype.htmlContent = null;
@@ -114,7 +127,7 @@ define(function (require, exports, module) {
      * Initial height of inline widget in pixels. Can be changed later via hostEditor.setInlineWidgetHeight()
      * @type {number}
      */
-    InlineWidget.prototype.height = 140;
+    InlineWidget.prototype.height = 0;
 
     /**
      * Closes this inline widget and all its contained Editors
@@ -150,12 +163,6 @@ define(function (require, exports, module) {
         this.hostEditor.setInlineWidgetHeight(this, this.height, true);
     };
 
-    /**
-     * @param {Editor} hostEditor
-     */
-    InlineWidget.prototype.load = function (hostEditor) {
-        this.hostEditor = hostEditor;
-    };
 
     /**
      * Called when the editor containing the inline is made visible.
