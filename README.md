@@ -6,8 +6,8 @@ Ideas will be demostrated on JavaScript, using Brackets editor.
 
 ## Sketches
 
+![Design](https://raw.github.com/equiet/recognizer/master/recognizer.png)
 ![Design](https://raw.github.com/equiet/recognizer/master/recognizer_concept.png)
-![Design](https://raw.github.com/equiet/recognizer/master/recognizer_inline.png)
 
 
 ## Scope
