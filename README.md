@@ -4,6 +4,10 @@ recognizer
 A concept for advanced developer tools for dynamic languages.
 Ideas will be demostrated on JavaScript, using Brackets editor.
 
+## Does it work already?
+
+No.
+
 ## Sketches
 
 ![Design](https://raw.github.com/equiet/recognizer/master/recognizer.png)
