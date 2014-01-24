@@ -1,0 +1,22 @@
+{
+  "name": "recognizer",
+  "version": "0.0.0",
+  "description": "Development tools for Brackets",
+  "main": "main.js",
+  "dependencies": {
+    "gulp-sass": "~0.5.2",
+    "gulp": "~3.4.0",
+    "gulp-util": "~2.2.12"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/equiet/recognizer.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "readmeFilename": "README.md"
+}
