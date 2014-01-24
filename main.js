@@ -9,6 +9,8 @@ define(function (require, exports, module) {
         AppInit         = brackets.getModule('utils/AppInit'),
         DocumentManager = brackets.getModule('document/DocumentManager'),
         EditorManager   = brackets.getModule('editor/EditorManager'),
+        ProjectManager  = brackets.getModule('project/ProjectManager'),
+        FileSystem      = brackets.getModule('filesystem/FileSystem'),
         DebugInlineWidget    = require('src/DebugInlineWidget').InlineWidget,
         Agent = require('src/Agent'),
         AgentHandle = require('src/AgentHandle'),
@@ -19,7 +21,6 @@ define(function (require, exports, module) {
 
     ExtensionUtils.loadStyleSheet(module, 'main.less');
     ExtensionUtils.loadStyleSheet(module, 'src/styles/font-awesome.css');
-
 
     var hostEditor;
 
@@ -63,7 +64,27 @@ define(function (require, exports, module) {
 
         // UI.panel()
         //
+        //
 
+
+        var workingSet = DocumentManager.getWorkingSet();
+
+        workingSet.filter(function(file) {
+
+            // Find only files ending with .js which are not already instrumented
+            return file.name.match(/\.js$/) && !file.name.match(/\.recognizer\.js$/);
+
+        }).forEach(function(file) {
+
+            // Create .recognizer.js file
+            var newPath = file.fullPath.replace(/\.js$/, '.recognizer.js');
+            var newFile = FileSystem.getFileForPath(newPath);
+
+            file.read({}, function(err, data, stat) {
+                newFile.write(data, {});
+            });
+
+        });
 
 
 
