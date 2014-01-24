@@ -6,7 +6,8 @@
   "dependencies": {
     "gulp-sass": "~0.5.2",
     "gulp": "~3.4.0",
-    "gulp-util": "~2.2.12"
+    "gulp-util": "~2.2.12",
+    "esprima": "~1.0.4"
   },
   "devDependencies": {},
   "scripts": {

@@ -18,6 +18,8 @@ define(function (require, exports, module) {
         UI = require('src/UI'),
         WidgetManager = require('src/WidgetManager');
 
+    var esprima = require('node_modules/esprima/esprima');
+
 
     ExtensionUtils.loadStyleSheet(module, 'main.less');
     ExtensionUtils.loadStyleSheet(module, 'src/styles/font-awesome.css');
@@ -81,7 +83,12 @@ define(function (require, exports, module) {
             var newFile = FileSystem.getFileForPath(newPath);
 
             file.read({}, function(err, data, stat) {
-                newFile.write(data, {});
+                var ast = esprima.parse(data);
+                newFile.write(JSON.stringify(ast), {
+                    loc: true,
+                    tolerant: true
+                });
+                console.log(ast);
             });
 
         });
