@@ -101,8 +101,33 @@ define(function (require, exports, module) {
         });
 
 
+        var timestamp;
 
         setInterval(function () {
+
+            tracedDocuments.forEach(function(tracedDocument) {
+
+                if (!tracedDocument.isReady()) {
+                    return;
+                }
+
+                tracedDocument.getLog(timestamp, function(err, log) {
+
+                    log.forEach(function(entry) {
+                        WidgetManager.getWidget(entry.position).addEntry(entry);
+                    });
+
+                });
+
+            });
+
+            timestamp = Date.now();
+
+        }, 100);
+
+
+        setInterval(function () {
+
             if (Agent.isReady()) {
 
 
@@ -111,14 +136,14 @@ define(function (require, exports, module) {
 
                     _loggedNodes = [];
 
-                    for (var id in hits) {
-                        if (hits.hasOwnProperty(id)) {
-                            _loggedNodes.push(id);
-                            if (WidgetManager.getWidget(id)) {
-                                WidgetManager.getWidget(id).counter.updateCounter(hits[id]);
-                            }
-                        }
-                    }
+                    // for (var id in hits) {
+                    //     if (hits.hasOwnProperty(id)) {
+                    //         _loggedNodes.push(id);
+                    //         if (WidgetManager.getWidget(id)) {
+                    //             WidgetManager.getWidget(id).counter.updateCounter(hits[id]);
+                    //         }
+                    //     }
+                    // }
 
                 });
 
@@ -149,16 +174,16 @@ define(function (require, exports, module) {
 
                 if (_logHandle !== undefined) {
                     Agent.refreshLogs(_logHandle, 20, function (results) {
-                        if (results && results.length > 0) {
-                            results.forEach(function (result) {
-                                if (WidgetManager.getWidget(result.nodeId)) {
-                                    result.arguments = result.arguments.map(function (arg) {
-                                        return arg.value.preview || arg.value.value;
-                                    });
-                                    WidgetManager.getWidget(result.nodeId).log.addRow(result.timestamp, result.arguments);
-                                }
-                            });
-                        }
+                        // if (results && results.length > 0) {
+                        //     results.forEach(function (result) {
+                        //         if (WidgetManager.getWidget(result.nodeId)) {
+                        //             result.arguments = result.arguments.map(function (arg) {
+                        //                 return arg.value.preview || arg.value.value;
+                        //             });
+                        //             WidgetManager.getWidget(result.nodeId).log.addRow(result.timestamp, result.arguments);
+                        //         }
+                        //     });
+                        // }
                     });
                 }
             }
@@ -167,14 +192,14 @@ define(function (require, exports, module) {
 
         // TODO get all nodes at the beginning
         setInterval(function () {
-            Agent.trackLogs({
-                ids: _loggedNodes,
-                eventNames: [],
-                exceptions: false,
-                logs: false,
-            }, function (handle) {
-                _logHandle = handle;
-            });
+            // Agent.trackLogs({
+            //     ids: _loggedNodes,
+            //     eventNames: [],
+            //     exceptions: false,
+            //     logs: false,
+            // }, function (handle) {
+            //     _logHandle = handle;
+            // });
         }, 2000);
 
 

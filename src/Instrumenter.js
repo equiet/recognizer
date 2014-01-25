@@ -65,7 +65,7 @@ define(function (require, exports, module) {
                     "computed": false,
                     "object": {
                         "type": "Identifier",
-                        "name": "__tracer{{tracerId}}"
+                        "name": "__recognizer{{tracerId}}"
                     },
                     "property": {
                         "type": "Identifier",

@@ -1,17 +1,9 @@
 define(function (require, exports, module) {
     'use strict';
 
-    var CounterWidget = require('src/CounterWidget').CounterWidget,
-        LogWidget = require('src/LogWidget').LogWidget;
+    var FunctionWidget = require('src/FunctionWidget').FunctionWidget;
 
     var _widgets = {};
-
-    function _createWidget(id) {
-        return {
-            counter: new CounterWidget(_getPositionFromId(id), function () { _widgets[id].log.widget.showToggle(); }),
-            log: new LogWidget(_getPositionFromId(id))
-        };
-    }
 
     function _matchPosition(id) {
         return id.match(/function-(\d+)-(\d+)-(\d+)-(\d+)$/i);
@@ -25,14 +17,13 @@ define(function (require, exports, module) {
         };
     }
 
-    function getWidget(id) {
-        // Throw away some weird ids that are not really our functions
-        if (!_matchPosition(id)) {
-            return null;
-        }
+    function getWidget(position) {
+        var id = JSON.stringify(position);
+
         if (_widgets[id] === undefined) {
-            _widgets[id] = _createWidget(id);
+            _widgets[id] = new FunctionWidget(position);
         }
+
         return _widgets[id];
     }
 

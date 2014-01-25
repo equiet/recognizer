@@ -11,10 +11,17 @@ var __recognizer{{tracerId}} = (function () {
 	}
 	Tracer.prototype = {
 		logEntry: function (location, args) {
-			this._calls.push({position: location, args: Array.prototype.slice.call(args)});
+			this._calls.push({
+				position: location,
+				args: Array.prototype.slice.call(args),
+				time: Date.now()
+			});
 		},
-		getCalls: function () {
-			return this._calls;
+		getCalls: function (since) {
+			var calls = this._calls.filter(function(call) {
+				return (since) ? call.time > since : true;
+			});
+			return JSON.stringify(calls);
 		},
 		getCallCount: function () {
 			return this._calls.length;
