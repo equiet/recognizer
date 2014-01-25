@@ -6,71 +6,12 @@ define(function (require, exports, module) {
         Async = brackets.getModule('utils/Async');
 
     function LogWidget(position) {
-        this.hostEditor = EditorManager.getCurrentFullEditor();
-        this.widget = new InlineWidget(this.hostEditor, position[2]);
-        this.position = position;
-        this._toggleQueue = new Async.PromiseQueue();
-    }
-
-    LogWidget.prototype.addRow = function (timestamp, args) {
-        var d = new Date(timestamp),
-            baseTime = padNumber(d.getHours(), 2) + ':' +
-                       padNumber(d.getMinutes(), 2) + ':' +
-                       padNumber(d.getSeconds(), 2),
-            miliseconds = padNumber(d.getMilliseconds(), 3);
-        this.widget.addRow(this.widget.$lastGroup, baseTime, miliseconds, args);
-    };
-
-    LogWidget.prototype.toggle = function(show) {
-        if (show) {
-            // this.widget = new InlineWidget(this.hostEditor, position[2]);
-            return this.hostEditor.addInlineWidget(
-                {line: this.position[2] - 1, ch: 0},
-                this.widget
-            );
-        } else {
-            this.widget.close();
-            return this.hostEditor.removeInlineWidget(this.widget);
-        }
-    };
-
-    LogWidget.prototype.remove = function() {
-        this.widget.close();
-    };
-
-    /**
-     * Helpers
-     */
-
-    function padNumber(number, size) {
-        return ('0000' + number).slice(-size);
-    }
-
-
-    /**
-     * Inline widget
-     */
-
-    function InlineWidget(hostEditor, line) {
         var self = this;
 
-        this.hostEditor = hostEditor;
-        this.info = {line: line};
-
-        // create the outer wrapper div
-        // this.htmlContent = window.document.createElement("div");
-        // this.$htmlContent = $(this.htmlContent).addClass("inline-widget").attr("tabindex", "-1");
-        // this.$htmlContent.append("<div class='shadow top' />")
-        //     .append("<div class='shadow bottom' />")
-        //     .append("<a href='#' class='close no-focus'>&times;</a>");
-
-        // // create the close button
-        // this.$closeBtn = this.$htmlContent.find(".close");
-        // this.$closeBtn.click(function (e) {
-        //     self.close();
-        //     e.stopImmediatePropagation();
-        // });
-
+        this.hostEditor = EditorManager.getCurrentFullEditor();
+        this.widget = null;
+        this.position = position;
+        this._toggleQueue = new Async.PromiseQueue();
 
         this.htmlContent = window.document.createElement("div");
         this.$htmlContent = $(this.htmlContent).addClass("inline-widget recognizer-widget");
@@ -95,33 +36,50 @@ define(function (require, exports, module) {
             }
         });
 
-        // Close with Esc
-        // TODO sync with CounterWidget
-        this.$htmlContent.on('keydown', function (e) {
-            if (e.keyCode === KeyEvent.DOM_VK_ESCAPE) {
-                self.close();
-                e.stopImmediatePropagation();
-            }
-        });
-
     }
 
-    InlineWidget.prototype.addScrollContainer = function ($body) {
+    LogWidget.prototype.addRow = function (timestamp, args) {
+        var d = new Date(timestamp),
+            baseTime = padNumber(d.getHours(), 2) + ':' +
+                       padNumber(d.getMinutes(), 2) + ':' +
+                       padNumber(d.getSeconds(), 2),
+            miliseconds = padNumber(d.getMilliseconds(), 3);
+        this.addRowInternal(this.$lastGroup, baseTime, miliseconds, args);
+    };
+
+    LogWidget.prototype.toggle = function(show) {
+        if (show) {
+            this.widget = new InlineWidget(this.hostEditor, this.position[2], this.htmlContent, this.$htmlContent);
+            return this.hostEditor.addInlineWidget(
+                {line: this.position[2] - 1, ch: 0},
+                this.widget
+            );
+        } else {
+            this.widget.close();
+            return this.hostEditor.removeInlineWidget(this.widget);
+        }
+    };
+
+    LogWidget.prototype.remove = function() {
+        this.widget.close();
+    };
+
+    LogWidget.prototype.addScrollContainer = function ($body) {
         var $container = $('<div />').addClass('rw_scroll-container').appendTo($body);
         return $('<div />').addClass('rw_scroll-content').appendTo($container);
     };
 
-    InlineWidget.prototype.addTable = function ($container) {
+    LogWidget.prototype.addTable = function ($container) {
         return $('<table />').addClass('rw_table').appendTo($container);
     };
 
-    InlineWidget.prototype.addGroup = function ($table) {
+    LogWidget.prototype.addGroup = function ($table) {
         var $group = $('<tbody />').addClass('rw_group').appendTo($table);
         this.$lastGroup = $group;
         return $group;
     };
 
-    InlineWidget.prototype.addRow = function ($group, baseTime, milliseconds, args) {
+    LogWidget.prototype.addRowInternal = function ($group, baseTime, milliseconds, args) {
         // args = Array.prototype.slice.call(args);
         // console.log(args);
         var $row = $('<tr />');
@@ -133,6 +91,42 @@ define(function (require, exports, module) {
         });
         return $row.appendTo(this.$lastGroup);
     };
+
+
+    /**
+     * Inline widget
+     */
+
+    function InlineWidget(hostEditor, line, htmlContent, $htmlContent) {
+        var self = this;
+
+        this.hostEditor = hostEditor;
+        this.info = {line: line};
+
+        this.htmlContent = htmlContent;
+        this.$htmlContent = $htmlContent;
+
+        // create the close button
+        // TODO make close button
+        this.$closeBtn = this.$htmlContent.find('.close');
+        this.$closeBtn.click(function (e) {
+            self.close();
+            e.stopImmediatePropagation();
+        });
+
+        // Close with Esc
+        // TODO sync with CounterWidget
+        this.$htmlContent.on('keydown', function (e) {
+            if (e.keyCode === KeyEvent.DOM_VK_ESCAPE) {
+                self.remove();
+                e.stopImmediatePropagation();
+            }
+        });
+
+
+    }
+
+
 
     InlineWidget.prototype.htmlContent = null;
     InlineWidget.prototype.$htmlContent = null;
@@ -193,6 +187,15 @@ define(function (require, exports, module) {
     InlineWidget.prototype.refresh = function () {
         // do nothing - base implementation
     };
+
+
+    /**
+     * Helpers
+     */
+
+    function padNumber(number, size) {
+        return ('0000' + number).slice(-size);
+    }
 
 
     exports.LogWidget = LogWidget;
