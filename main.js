@@ -29,6 +29,9 @@ define(function (require, exports, module) {
     var inlineWidgets = {};
 
 
+    var tracedDocuments = [];
+
+
 
     // Update statusbar
     $(LiveDevelopment).on('statusChange', function(e, status) {
@@ -44,6 +47,11 @@ define(function (require, exports, module) {
     // Insert tracer into browser
     $(LiveDevelopment).on('statusChange', function(e, status) {
         if (status === 3 ) {
+
+            tracedDocuments.forEach(function(tracedDocument) {
+                tracedDocument.connect();
+            });
+
         }
     });
 
@@ -83,8 +91,10 @@ define(function (require, exports, module) {
 
             file.read({}, function(err, data, stat) {
 
-                data = Instrumenter.instrument(file.name, data);
-                newFile.write(data, {});
+                var tracedDocument = Instrumenter.instrument(file.name, data);
+                newFile.write(tracedDocument.code, {});
+
+                tracedDocuments.push(tracedDocument);
 
             });
 
@@ -142,7 +152,6 @@ define(function (require, exports, module) {
                         if (results && results.length > 0) {
                             results.forEach(function (result) {
                                 if (WidgetManager.getWidget(result.nodeId)) {
-                                    console.log(result.arguments);
                                     result.arguments = result.arguments.map(function (arg) {
                                         return arg.value.preview || arg.value.value;
                                     });

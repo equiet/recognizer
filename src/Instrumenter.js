@@ -4,6 +4,8 @@
 define(function (require, exports, module) {
     'use strict';
 
+    var TracedDocument = require('src/TracedDocument').TracedDocument;
+
     var esprima = require('thirdparty/esprima'),
         escodegen = require('thirdparty/escodegen');
 
@@ -19,7 +21,13 @@ define(function (require, exports, module) {
 
         ast = _instrumentFunctionDeclarations(ast);
 
-        return tracerSnippet + escodegen.generate(ast);
+        var tracerId = Math.floor(Math.random() * 1000 * 1000 * 1000);
+
+        return new TracedDocument(
+            filename,
+            tracerId,
+            (tracerSnippet + escodegen.generate(ast)).replace(/\{\{tracerId\}\}/g, tracerId)
+        );
 
     }
 
@@ -57,7 +65,7 @@ define(function (require, exports, module) {
                     "computed": false,
                     "object": {
                         "type": "Identifier",
-                        "name": "__tracer"
+                        "name": "__tracer{{tracerId}}"
                     },
                     "property": {
                         "type": "Identifier",

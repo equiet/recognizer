@@ -3,12 +3,7 @@
  * https://github.com/equiet/recognizer
  */
 
-
- /**
-  * Tracer object
-  */
-
-var __recognizer = (function () {
+var __recognizer{{tracerId}} = (function () {
 	'use strict';
 
 	function Tracer() {
