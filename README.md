@@ -9,7 +9,7 @@ Ideas will be demostrated on JavaScript, using Brackets editor.
 Yes (kind of).
 
 1. Open some `.html` file with associated `.js` file in Brackets.
-2. `.recognizer.js` file will be created. Use this file as `&lt;script&gt;` source.
+2. `.recognizer.js` file will be created. Use this file as `<script>` source.
 3. Open Live Preview.
 4. All function declarations (only these for now) will be instrumented.
 
