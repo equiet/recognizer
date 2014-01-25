@@ -69,26 +69,26 @@ define(function (require, exports, module) {
             }
         };
 
-    }())
+    }());
 
     exports.panel = function() {
 
-        var Resizer = brackets.getModule('utils/Resizer')
+        var Resizer = brackets.getModule('utils/Resizer');
 
         var $panel = $('<div id="recognizer-panel" />'),
             $mainToolbar = $('#main-toolbar'),
-            $content = $('.main-view .content')
+            $content = $('.main-view .content');
 
-        $panel.html(require('text!src/panel.html'));
-        $mainToolbar.parent().append($panel)
+        $panel.html(require('text!src/snippets/panel.html'));
+        $mainToolbar.parent().append($panel);
 
-        Resizer.makeResizable($panel, Resizer.DIRECTION_HORIZONTAL, Resizer.POSITION_LEFT, 100, false, false)
+        Resizer.makeResizable($panel, Resizer.DIRECTION_HORIZONTAL, Resizer.POSITION_LEFT, 100, false, false);
 
         $panel.on('panelResizeUpdate', function() {
-            $content.css('right', $panel.width() + $mainToolbar.width())
-        })
+            $content.css('right', $panel.width() + $mainToolbar.width());
+        });
         $panel.trigger('panelResizeUpdate');
 
-    }
+    };
 
-})
+});

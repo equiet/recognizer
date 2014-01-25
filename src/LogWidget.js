@@ -95,22 +95,6 @@ define(function (require, exports, module) {
             }
         });
 
-
-        // Populate with some data
-        var args = [];
-        args.push(null);
-        args.push("request");
-        args.push({object: 'object'});
-        args.push([1,2,3]);
-        // for (var i = 0; i < 4; i++) {
-        //     var d = new Date();
-        //     this.addRow($group, d.getHours() + ':' + d.getMinutes() + ':' + d.getSeconds(), d.getMilliseconds(), args);
-        // }
-
-        // $group.clone().appendTo($table);
-
-        // this.$htmlContent.html(require('text!src/log.html'));
-
     }
 
     InlineWidget.prototype.addScrollContainer = function ($body) {

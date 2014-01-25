@@ -11,10 +11,6 @@ define(function (require, exports, module) {
         EditorManager   = brackets.getModule('editor/EditorManager'),
         ProjectManager  = brackets.getModule('project/ProjectManager'),
         FileSystem      = brackets.getModule('filesystem/FileSystem'),
-        DebugInlineWidget    = require('src/DebugInlineWidget').InlineWidget,
-        Agent = require('src/Agent'),
-        AgentHandle = require('src/AgentHandle'),
-        AgentManager = require('src/AgentManager'),
         UI = require('src/UI'),
         WidgetManager = require('src/WidgetManager'),
         Instrumenter = require('src/Instrumenter');
@@ -57,9 +53,6 @@ define(function (require, exports, module) {
 
 
 
-    var debugInlineWidget;
-
-
 
     function _init() {
 
@@ -68,12 +61,8 @@ define(function (require, exports, module) {
         // var $bookmark = $('<div />').css('background', '#11f').html('bookmark');
         // var testBookmark = hostEditor._codeMirror.addWidget({line: 8, ch: 14}, $bookmark.get(0));
 
-        Agent.init();
-        AgentManager.init();
 
         // UI.panel()
-        //
-        //
 
 
         var workingSet = DocumentManager.getWorkingSet();
@@ -101,6 +90,7 @@ define(function (require, exports, module) {
         });
 
 
+
         var timestamp;
 
         setInterval(function () {
@@ -112,11 +102,9 @@ define(function (require, exports, module) {
                 }
 
                 tracedDocument.getLog(timestamp, function(err, log) {
-
                     log.forEach(function(entry) {
                         WidgetManager.getWidget(entry.position).addEntry(entry);
                     });
-
                 });
 
             });
@@ -124,83 +112,6 @@ define(function (require, exports, module) {
             timestamp = Date.now();
 
         }, 100);
-
-
-        setInterval(function () {
-
-            if (Agent.isReady()) {
-
-
-
-                Agent.refreshHitCounts(function (hits, hitDeltas) {
-
-                    _loggedNodes = [];
-
-                    // for (var id in hits) {
-                    //     if (hits.hasOwnProperty(id)) {
-                    //         _loggedNodes.push(id);
-                    //         if (WidgetManager.getWidget(id)) {
-                    //             WidgetManager.getWidget(id).counter.updateCounter(hits[id]);
-                    //         }
-                    //     }
-                    // }
-
-                });
-
-
-                Agent.refreshExceptionCounts(function (counts, deltas) {
-
-                    // console.log('counts:', counts);
-                    // console.log('deltas:', deltas);
-
-                    // // add the 'exception' class to all the pills that threw exceptions this cycle
-                    // for (var id in deltas) {
-                    //     _getNodeMarker(id).addClass("exception")
-                    //                       .toggleClass("uninitialized-exceptions", false);
-                    // }
-
-                    // // update the pills that were reset because they scrolled off-screen
-                    // var uninitialized = $(".CodeMirror").find(".theseus-call-count.uninitialized-exceptions");
-                    // uninitialized.each(function () {
-                    //     var id = $(this).attr("data-node-id");
-                    //     if (id in counts) {
-                    //         _getNodeMarker(id).addClass("exception")
-                    //                           .toggleClass("uninitialized-exceptions", false);
-                    //     }
-                    // });
-                    //
-                });
-
-
-                if (_logHandle !== undefined) {
-                    Agent.refreshLogs(_logHandle, 20, function (results) {
-                        // if (results && results.length > 0) {
-                        //     results.forEach(function (result) {
-                        //         if (WidgetManager.getWidget(result.nodeId)) {
-                        //             result.arguments = result.arguments.map(function (arg) {
-                        //                 return arg.value.preview || arg.value.value;
-                        //             });
-                        //             WidgetManager.getWidget(result.nodeId).log.addRow(result.timestamp, result.arguments);
-                        //         }
-                        //     });
-                        // }
-                    });
-                }
-            }
-        }, 100);
-
-
-        // TODO get all nodes at the beginning
-        setInterval(function () {
-            // Agent.trackLogs({
-            //     ids: _loggedNodes,
-            //     eventNames: [],
-            //     exceptions: false,
-            //     logs: false,
-            // }, function (handle) {
-            //     _logHandle = handle;
-            // });
-        }, 2000);
 
 
 
