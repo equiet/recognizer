@@ -16,10 +16,9 @@ define(function (require, exports, module) {
         AgentHandle = require('src/AgentHandle'),
         AgentManager = require('src/AgentManager'),
         UI = require('src/UI'),
-        WidgetManager = require('src/WidgetManager');
+        WidgetManager = require('src/WidgetManager'),
+        Instrumenter = require('src/Instrumenter');
 
-    var esprima = require('thirdparty/esprima'),
-        escodegen = require('thirdparty/escodegen');
 
     ExtensionUtils.loadStyleSheet(module, 'main.less');
     ExtensionUtils.loadStyleSheet(module, 'src/styles/font-awesome.css');
@@ -84,14 +83,8 @@ define(function (require, exports, module) {
 
             file.read({}, function(err, data, stat) {
 
-                var ast = esprima.parse(data, {
-                    loc: true,
-                    tolerant: true
-                });
-                var code = escodegen.generate(ast);
-
-                newFile.write(code, {});
-                console.log(ast);
+                data = Instrumenter.instrument(file.name, data);
+                newFile.write(data, {});
 
             });
 
