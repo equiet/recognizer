@@ -2,12 +2,14 @@ define(function (require, exports, module) {
     'use strict';
 
     var EditorManager = brackets.getModule('editor/EditorManager'),
-        KeyEvent = brackets.getModule("utils/KeyEvent");
+        KeyEvent = brackets.getModule('utils/KeyEvent'),
+        Async = brackets.getModule('utils/Async');
 
     function LogWidget(position) {
         this.hostEditor = EditorManager.getCurrentFullEditor();
         this.widget = new InlineWidget(this.hostEditor, position[2]);
         this.position = position;
+        this._toggleQueue = new Async.PromiseQueue();
     }
 
     LogWidget.prototype.addRow = function (timestamp, args) {
@@ -21,15 +23,20 @@ define(function (require, exports, module) {
 
     LogWidget.prototype.toggle = function(show) {
         if (show) {
-            this.hostEditor.addInlineWidget(
+            // this.widget = new InlineWidget(this.hostEditor, position[2]);
+            return this.hostEditor.addInlineWidget(
                 {line: this.position[2] - 1, ch: 0},
                 this.widget
             );
         } else {
             this.widget.close();
+            return this.hostEditor.removeInlineWidget(this.widget);
         }
     };
 
+    LogWidget.prototype.remove = function() {
+        this.widget.close();
+    };
 
     /**
      * Helpers
@@ -64,13 +71,6 @@ define(function (require, exports, module) {
         //     e.stopImmediatePropagation();
         // });
 
-        // this.$htmlContent.on("keydown", function (e) {
-        //     if (e.keyCode === KeyEvent.DOM_VK_ESCAPE) {
-        //         self.close();
-        //         e.stopImmediatePropagation();
-        //     }
-        // });
-
 
         this.htmlContent = window.document.createElement("div");
         this.$htmlContent = $(this.htmlContent).addClass("inline-widget recognizer-widget");
@@ -92,6 +92,15 @@ define(function (require, exports, module) {
                 $scrollContainer.parent().addClass('has-scroll-down');
             } else {
                 $scrollContainer.parent().removeClass('has-scroll-down');
+            }
+        });
+
+        // Close with Esc
+        // TODO sync with CounterWidget
+        this.$htmlContent.on('keydown', function (e) {
+            if (e.keyCode === KeyEvent.DOM_VK_ESCAPE) {
+                self.close();
+                e.stopImmediatePropagation();
             }
         });
 

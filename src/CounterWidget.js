@@ -35,6 +35,10 @@ define(function (require, exports, module) {
 		this.updateCounter(this.count + 1);
 	};
 
+	CounterWidget.prototype.remove = function() {
+		this.marker.clear();
+	};
+
 	exports.CounterWidget = CounterWidget;
 
 });

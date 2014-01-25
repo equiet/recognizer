@@ -13,7 +13,7 @@ define(function (require, exports, module) {
         FileSystem      = brackets.getModule('filesystem/FileSystem'),
         UI = require('src/UI'),
         WidgetManager = require('src/WidgetManager'),
-        Instrumenter = require('src/Instrumenter');
+        TracerManager = require('src/TracerManager');
 
 
     ExtensionUtils.loadStyleSheet(module, 'main.less');
@@ -23,9 +23,6 @@ define(function (require, exports, module) {
 
 
     var inlineWidgets = {};
-
-
-    var tracedDocuments = [];
 
 
 
@@ -43,11 +40,8 @@ define(function (require, exports, module) {
     // Insert tracer into browser
     $(LiveDevelopment).on('statusChange', function(e, status) {
         if (status === 3 ) {
-
-            tracedDocuments.forEach(function(tracedDocument) {
-                tracedDocument.connect();
-            });
-
+            TracerManager.reset();
+            TracerManager.connectAll();
         }
     });
 
@@ -64,55 +58,45 @@ define(function (require, exports, module) {
 
         // UI.panel()
 
-
-        var workingSet = DocumentManager.getWorkingSet();
-
-        workingSet.filter(function(file) {
-
-            // Find only files ending with .js which are not already instrumented
-            return file.name.match(/\.js$/) && !file.name.match(/\.recognizer\.js$/);
-
-        }).forEach(function(file) {
-
-            // Create .recognizer.js file
-            var newPath = file.fullPath.replace(/\.js$/, '.recognizer.js');
-            var newFile = FileSystem.getFileForPath(newPath);
-
-            file.read({}, function(err, data, stat) {
-
-                var tracedDocument = Instrumenter.instrument(file.name, data);
-                newFile.write(tracedDocument.code, {});
-
-                tracedDocuments.push(tracedDocument);
-
-            });
-
+        DocumentManager.getWorkingSet().forEach(function(file) {
+            TracerManager.registerFile(file);
         });
 
+        $(DocumentManager).on('documentSaved', function(e, doc) {
+            TracerManager.registerFile(doc.file);
+        });
 
+        $(DocumentManager).on('documentRefreshed', function(e, doc) {
+            TracerManager.registerFile(doc.file);
+        });
 
-        var timestamp;
+        $(DocumentManager).on('workingSetAdd', function(e, file) {
+            TracerManager.registerFile(file);
+        });
 
-        setInterval(function () {
-
-            tracedDocuments.forEach(function(tracedDocument) {
-
-                if (!tracedDocument.isReady()) {
-                    return;
-                }
-
-                tracedDocument.getLog(timestamp, function(err, log) {
-                    log.forEach(function(entry) {
-                        WidgetManager.getWidget(entry.position).addEntry(entry);
-                    });
-                });
-
+        $(DocumentManager).on('workingSetAddList', function(e, list) {
+            list.forEach(function(file) {
+                TracerManager.registerFile(file);
             });
+        });
 
-            timestamp = Date.now();
+        $(DocumentManager).on('workingSetRemove', function(e, file) {
+            TracerManager.unregisterFile(file);
+        });
 
-        }, 100);
+        $(DocumentManager).on('workingSetRemoveList', function(e, list) {
+            list.forEach(function(file) {
+                TracerManager.unregisterFile(file);
+            });
+        });
 
+        $(DocumentManager).on('fileNameChanged', function(e, oldName, newName) {
+            console.log(arguments);
+            // TODO
+            // TracerManager.unregisterFile(file);
+        });
+
+        TracerManager.listen();
 
 
     }

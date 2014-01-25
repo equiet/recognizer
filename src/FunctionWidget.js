@@ -6,8 +6,7 @@ define(function (require, exports, module) {
         LogWidget = require('src/LogWidget').LogWidget;
 
     function FunctionWidget(position) {
-        var hostEditor = EditorManager.getCurrentFullEditor();
-
+        this.hostEditor = EditorManager.getCurrentFullEditor();
         this.counterWidget = new CounterWidget(position);
         this.logWidget = new LogWidget(position);
 
@@ -23,6 +22,11 @@ define(function (require, exports, module) {
     FunctionWidget.prototype.addEntry = function (entry) {
         this.counterWidget.increaseCounter();
         this.logWidget.addRow(entry.time, entry.args);
+    };
+
+    FunctionWidget.prototype.remove = function() {
+        this.counterWidget.remove();
+        this.logWidget.remove();
     };
 
     exports.FunctionWidget = FunctionWidget;

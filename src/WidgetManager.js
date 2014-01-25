@@ -1,32 +1,29 @@
 define(function (require, exports, module) {
     'use strict';
 
-    var FunctionWidget = require('src/FunctionWidget').FunctionWidget;
+    var EditorManager = brackets.getModule('editor/EditorManager'),
+        FunctionWidget = require('src/FunctionWidget').FunctionWidget;
 
-    var _widgets = {};
-
-    function _matchPosition(id) {
-        return id.match(/function-(\d+)-(\d+)-(\d+)-(\d+)$/i);
-    }
-
-    function _getPositionFromId(id) {
-        var values = _matchPosition(id);
-        return {
-            line: parseInt(values[1], 10),
-            ch: parseInt(values[2], 10)
-        };
-    }
+    var widgets = {};
 
     function getWidget(position) {
         var id = JSON.stringify(position);
 
-        if (_widgets[id] === undefined) {
-            _widgets[id] = new FunctionWidget(position);
+        if (widgets[id] === undefined) {
+            widgets[id] = new FunctionWidget(position);
         }
 
-        return _widgets[id];
+        return widgets[id];
+    }
+
+    function removeAll() {
+        Object.keys(widgets).forEach(function(id) {
+            widgets[id].remove();
+            delete widgets[id];
+        });
     }
 
     exports.getWidget = getWidget;
+    exports.removeAll = removeAll;
 
 });
