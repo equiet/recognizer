@@ -10,7 +10,7 @@ Yes (kind of).
 
 1. Open some .js file in Brackets.
 2. Reload Brackets, .recognizer.js file will appear (this will be done automatically in future versions).
-3. Use this file in <script> loads.
+3. Use this file in &lt;script&gt; loads.
 4. Open Live Preview.
 5. All function declarations (only these for now) will be instrumented.
 
