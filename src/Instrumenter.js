@@ -20,6 +20,7 @@ define(function (require, exports, module) {
         });
 
         ast = _instrumentFunctionDeclarations(ast);
+        ast = _instrumentFunctionExpressions(ast);
 
         var tracerId = Math.floor(Math.random() * 1000 * 1000 * 1000);
 
@@ -48,6 +49,44 @@ define(function (require, exports, module) {
                 node.id.loc.start.column,
                 node.id.loc.end.line,
                 node.id.loc.end.column
+            ));
+        }
+
+        return node;
+    }
+
+
+
+    function _instrumentFunctionExpressions(node) {
+
+        if (Array.isArray(node.body)) {
+            node.body.map(_instrumentFunctionExpressions);
+        }
+
+        if (node.body && Array.isArray(node.body.body)) {
+            node.body.body.map(_instrumentFunctionExpressions);
+        }
+
+        if (node.type === 'VariableDeclaration') {
+            node.declarations.forEach(function(declaration) {
+                _instrumentFunctionExpressions(declaration.init);
+            });
+        }
+
+        if (node.type === 'VariableDeclarator') {
+            _instrumentFunctionExpressions(node.init);
+        }
+
+        if (node.type === 'ExpressionStatement') {
+            node.expression.arguments.forEach(_instrumentFunctionExpressions);
+        }
+
+        if (node.type === 'FunctionExpression') {
+            node.body.body.unshift(_getFunctionEntryAst(
+                node.loc.start.line,
+                node.loc.start.column,
+                node.loc.start.line,
+                node.loc.start.column + 8
             ));
         }
 
