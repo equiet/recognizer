@@ -61,7 +61,9 @@ define(function (require, exports, module) {
     };
 
     LogWidget.prototype.remove = function() {
-        this.widget.close();
+        if (this.widget) {
+            this.widget.close();
+        }
     };
 
     LogWidget.prototype.addScrollContainer = function ($body) {

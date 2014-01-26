@@ -38,6 +38,7 @@ define(function (require, exports, module) {
 
             if (res.wasThrown) {
                 callback(true, res.result);
+                return;
             }
 
             callback(false, JSON.parse(res.result.value));

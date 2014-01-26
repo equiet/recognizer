@@ -56,6 +56,10 @@ define(function (require, exports, module) {
                     return;
                 }
                 tracedDocuments[key].getLog(timestamp, function(err, log) {
+                    if (err) {
+                        console.log('[recognizer] Error retrieving log', log);
+                        return;
+                    }
                     log.forEach(function(entry) {
                         WidgetManager.getWidget(entry.position).addEntry(entry);
                     });
