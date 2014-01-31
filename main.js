@@ -19,6 +19,13 @@ define(function (require, exports, module) {
 
     function testInspector() {
 
+        window.RuntimeAgent = Inspector.Runtime;
+        // RuntimeAgent.getProperties = function() {
+        //     return Inspector.Runtime.getProperties(arguments[0], arguments[1], function(res) {
+        //         arguments[3].call(this, res.result, res.internalProperties);
+        //     });
+        // }
+
         var _printResult = function(result, wasThrown, originatingCommand)
         {
             console.log('result', result);
@@ -36,6 +43,7 @@ define(function (require, exports, module) {
                 var message = new WebInspector.ConsoleCommandResult(result, wasThrown, originatingCommand, WebInspector.Linkifier, url, lineNumber, columnNumber);
                 console.log('message', message);
                 console.log('toMessageElement', message.toMessageElement());
+                $('#project-files-container').append(message.toMessageElement());
                 // WebInspector.console.addMessage(message);
             }
 
