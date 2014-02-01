@@ -19,9 +19,9 @@ define(function (require, exports, module) {
         }.bind(this));
     }
 
-    FunctionWidget.prototype.addEntry = function (entry) {
+    FunctionWidget.prototype.addEntry = function (entry, tracerId) {
         this.counterWidget.increaseCounter();
-        this.logWidget.addRow(entry.time, entry.args);
+        this.logWidget.addRow(entry.time, entry.args, entry.index, tracerId);
     };
 
     FunctionWidget.prototype.remove = function() {

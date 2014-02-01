@@ -55,13 +55,13 @@ define(function (require, exports, module) {
                 if (!tracedDocuments[key].isReady()) {
                     return;
                 }
-                tracedDocuments[key].getLog(timestamp, function(err, log) {
+                tracedDocuments[key].getLog(timestamp, function(err, log, tracerId) {
                     if (err) {
                         console.log('[recognizer] Error retrieving log', log);
                         return;
                     }
                     log.forEach(function(entry) {
-                        WidgetManager.getWidget(entry.position).addEntry(entry);
+                        WidgetManager.getWidget(entry.position).addEntry(entry, tracerId);
                     });
                 });
             });

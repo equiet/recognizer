@@ -3,7 +3,10 @@ define(function (require, exports, module) {
 
     var EditorManager = brackets.getModule('editor/EditorManager'),
         KeyEvent = brackets.getModule('utils/KeyEvent'),
-        Async = brackets.getModule('utils/Async');
+        Async = brackets.getModule('utils/Async'),
+        Inspector = brackets.getModule('LiveDevelopment/Inspector/Inspector');
+
+    var WebInspector = require('thirdparty/WebInspector');
 
     function LogWidget(position) {
         var self = this;
@@ -38,13 +41,35 @@ define(function (require, exports, module) {
 
     }
 
-    LogWidget.prototype.addRow = function (timestamp, args) {
+    LogWidget.prototype.addRow = function (timestamp, args, index, tracerId) {
         var d = new Date(timestamp),
             baseTime = padNumber(d.getHours(), 2) + ':' +
                        padNumber(d.getMinutes(), 2) + ':' +
                        padNumber(d.getSeconds(), 2),
             miliseconds = padNumber(d.getMilliseconds(), 3);
-        this.addRowInternal(this.$lastGroup, baseTime, miliseconds, args);
+
+        var _addRowInternal = function ($group, baseTime, milliseconds, args, index) {
+            // args = Array.prototype.slice.call(args);
+            // console.log(args);
+            var $row = $('<tr />');
+            $row.append('<th class="rw_time-base">' + baseTime + '</th>');
+            $row.append('<th class="rw_time-milli">.' + milliseconds + '</th>');
+            $row.append('<th class="rw_warnings"><i class="fa fa-exclamation-triangle"></i></th>');
+            args.forEach(function(arg, i) {
+
+                // TODO this is async, make sure it is executed in order
+                Inspector.Runtime.evaluate('__recognizer' + tracerId + '._calls[' + index + '].args[' + i + ']', 'console', false, false, undefined, undefined, undefined, true /* generate preview */, function (res) {
+                    console.log('evaluated', arguments);
+                    var result = WebInspector.RemoteObject.fromPayload(res.result);
+                    var message = new WebInspector.ConsoleCommandResult(result, !!res.wasThrown, 'window', WebInspector.Linkifier, undefined, undefined, undefined);
+                    console.log('message', message.toMessageElement());
+                    $row.append($('<td>').append(message.toMessageElement()));
+                });
+            });
+            return $row.appendTo($group);
+        };
+
+        _addRowInternal(this.$lastGroup, baseTime, miliseconds, args, index);
     };
 
     LogWidget.prototype.toggle = function(show) {
@@ -79,19 +104,6 @@ define(function (require, exports, module) {
         var $group = $('<tbody />').addClass('rw_group').appendTo($table);
         this.$lastGroup = $group;
         return $group;
-    };
-
-    LogWidget.prototype.addRowInternal = function ($group, baseTime, milliseconds, args) {
-        // args = Array.prototype.slice.call(args);
-        // console.log(args);
-        var $row = $('<tr />');
-        $row.append('<th class="rw_time-base">' + baseTime + '</th>');
-        $row.append('<th class="rw_time-milli">.' + milliseconds + '</th>');
-        $row.append('<th class="rw_warnings"><i class="fa fa-exclamation-triangle"></i></th>');
-        args.forEach(function(arg) {
-            $row.append('<td>' + arg + '</td>');
-        });
-        return $row.appendTo(this.$lastGroup);
     };
 
 

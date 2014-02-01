@@ -41,9 +41,9 @@ define(function (require, exports, module) {
                 return;
             }
 
-            callback(false, JSON.parse(res.result.value));
+            callback(false, JSON.parse(res.result.value), this.tracerId);
 
-        });
+        }.bind(this));
 
     };
 

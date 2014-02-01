@@ -32,47 +32,23 @@ define(function (require, exports, module) {
             if (!result)
                 return;
 
-            /**
-             * @param {string=} url
-             * @param {number=} lineNumber
-             * @param {number=} columnNumber
-             * @this {WebInspector.ConsoleView}
-             */
-            function addMessage(url, lineNumber, columnNumber)
-            {
-                var message = new WebInspector.ConsoleCommandResult(result, wasThrown, originatingCommand, WebInspector.Linkifier, url, lineNumber, columnNumber);
-                console.log('message', message);
-                console.log('toMessageElement', message.toMessageElement());
-                $('#project-files-container').append(message.toMessageElement());
+            var message = new WebInspector.ConsoleCommandResult(result, wasThrown, originatingCommand, WebInspector.Linkifier, undefined, undefined, undefined);
+            console.log('message', message);
+            console.log('toMessageElement', message.toMessageElement());
+            $('#project-files-container').append(message.toMessageElement());
                 // WebInspector.console.addMessage(message);
-            }
 
-            addMessage.call(this);
         };
 
+        // Inspector.Runtime.evaluate('window', 'console', false, false, undefined, undefined, undefined, true /* generate preview */, function (res) {
+        //     // res = {result, wasThrown}
 
-        console.log(WebInspector);
-        // var command = WebInspector.ConsoleCommandResult(result, wasThrown, originatingCommand, linkifier, url, lineNumber, columnNumber);
-        // var command = new WebInspector.ConsoleCommandResult({test: 'object'}, false, null, null, undefined, undefined, undefined);
-        // console.log('aa', command);
-        // console.log(command.toMessageElement());
-
-        // WebInspector.ConsoleMessageImpl = function(source, level, message, linkifier, type, url, line, column, repeatCount, parameters, stackTrace, requestId, isOutdated)
-        // {
-        // ["javascript", "log", "", WebInspector.Linkifier, "result", undefined, undefined, undefined, undefined, Array[1]]
-        // var command = new WebInspector.ConsoleMessageImpl('javascript', 'log', '', null, 'result', undefined, undefined, undefined, undefined, Array[1]);
-
-        // 1 + 1 console true false false true
-        // Inspector.Runtime.evaluate('1 + 1', 'console', false  useCommandLineAPI , false, false, true /* generate preview */, function (res) {
-        Inspector.Runtime.evaluate('window', 'console', false, false, undefined, undefined, undefined, true /* generate preview */, function (res) {
-            // res = {result, wasThrown}
-
-            console.log('evaluated', arguments);
-            _printResult(WebInspector.RemoteObject.fromPayload(res.result), !!res.wasThrown, 'window');
-        });
-        Inspector.Runtime.evaluate('1+1', 'console', false, false, undefined, undefined, undefined, true /* generate preview */, function (res) {
-            _printResult(WebInspector.RemoteObject.fromPayload(res.result), !!res.wasThrown, '1+1');
-        });
+        //     console.log('evaluated', arguments);
+        //     _printResult(WebInspector.RemoteObject.fromPayload(res.result), !!res.wasThrown, 'window');
+        // });
+        // Inspector.Runtime.evaluate('1+1', 'console', false, false, undefined, undefined, undefined, true /* generate preview */, function (res) {
+        //     _printResult(WebInspector.RemoteObject.fromPayload(res.result), !!res.wasThrown, '1+1');
+        // });
 
     }
 
