@@ -26,6 +26,7 @@ define(function (require, exports, module) {
         //     });
         // }
 
+
         // var _printResult = function(result, wasThrown, originatingCommand)
         // {
         //     console.log('result', result);
@@ -40,12 +41,16 @@ define(function (require, exports, module) {
 
         // };
 
-        // Inspector.Runtime.evaluate('window', 'console', false, false, undefined, undefined, undefined, true /* generate preview */, function (res) {
-        //     // res = {result, wasThrown}
+        Inspector.Runtime.evaluate('window', 'console', false, false, undefined, undefined, undefined, true /* generate preview */, function (res) {
+            // res = {result, wasThrown}
 
-        //     console.log('evaluated', arguments);
-        //     _printResult(WebInspector.RemoteObject.fromPayload(res.result), !!res.wasThrown, 'window');
-        // });
+            console.log('evaluated', arguments);
+            console.log('RemoteObject', WebInspector.RemoteObject.fromPayload(res.result), !!res.wasThrown, 'window');
+
+            Inspector.Runtime.getProperties(res.result.objectId, function(result, internalProperties) {
+                console.log('getProperties', arguments);
+            });
+        });
         // Inspector.Runtime.evaluate('1+1', 'console', false, false, undefined, undefined, undefined, true /* generate preview */, function (res) {
         //     _printResult(WebInspector.RemoteObject.fromPayload(res.result), !!res.wasThrown, '1+1');
         // });
@@ -78,11 +83,13 @@ define(function (require, exports, module) {
 
     // Insert tracer into browser
     $(LiveDevelopment).on('statusChange', function(e, status) {
-        if (status === 3 ) {
-            TracerManager.reset();
+        if (status === 3) {
+            TracerManager.disconnectAll();
             TracerManager.connectAll();
-
             testInspector();
+        }
+        if (status === 0) {
+            TracerManager.disconnectAll();
         }
     });
 

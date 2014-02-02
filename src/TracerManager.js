@@ -7,7 +7,8 @@ define(function (require, exports, module) {
         WidgetManager = require('src/WidgetManager');
 
     var tracedDocuments = {},
-        refreshInterval;
+        refreshInterval,
+        _logStorage = [];
 
     function registerFile(file, callback) {
 
@@ -60,8 +61,8 @@ define(function (require, exports, module) {
                         console.log('[recognizer] Error retrieving log', log);
                         return;
                     }
-                    log.forEach(function(entry) {
-                        WidgetManager.getWidget(entry.position).addEntry(entry, tracerId);
+                    log.forEach(function(logItem) {
+                        WidgetManager.getWidget(logItem.position).addEntry(logItem, tracerId);
                     });
                 });
             });
@@ -71,7 +72,7 @@ define(function (require, exports, module) {
         }, 100);
     }
 
-    function reset() {
+    function disconnectAll() {
         WidgetManager.removeAll();
     }
 
@@ -79,6 +80,6 @@ define(function (require, exports, module) {
     exports.unregisterFile = unregisterFile;
     exports.connectAll = connectAll;
     exports.listen = listen;
-    exports.reset = reset;
+    exports.disconnectAll = disconnectAll;
 
 });
