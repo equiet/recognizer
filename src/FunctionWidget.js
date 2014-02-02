@@ -21,7 +21,7 @@ define(function (require, exports, module) {
 
     FunctionWidget.prototype.addEntry = function (entry, tracerId) {
         this.counterWidget.increaseCounter();
-        this.logWidget.addRow(entry.time, entry.args, entry.index, tracerId);
+        this.logWidget.addRow(entry.time, entry.argsCount, entry.index, tracerId);
     };
 
     FunctionWidget.prototype.remove = function() {

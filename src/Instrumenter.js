@@ -16,9 +16,10 @@ define(function (require, exports, module) {
 
         var ast = esprima.parse(code, {
             loc: true,
-            tolerant: true
+            tolerant: false
         });
 
+        // TODO: Use estraverse
         ast = _instrumentFunctionDeclarations(ast);
         ast = _instrumentFunctionExpressions(ast);
 
@@ -78,7 +79,9 @@ define(function (require, exports, module) {
         }
 
         if (node.type === 'ExpressionStatement') {
-            node.expression.arguments.forEach(_instrumentFunctionExpressions);
+            if (node.expression.type === 'CallExpression') {
+                node.expression.arguments.forEach(_instrumentFunctionExpressions);
+            }
         }
 
         if (node.type === 'FunctionExpression') {

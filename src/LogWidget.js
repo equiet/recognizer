@@ -41,33 +41,27 @@ define(function (require, exports, module) {
 
     }
 
-    LogWidget.prototype.addRow = function (timestamp, args, index, tracerId) {
+    LogWidget.prototype.addRow = function (timestamp, argsCount, index, tracerId) {
         var d = new Date(timestamp),
             baseTime = padNumber(d.getHours(), 2) + ':' +
                        padNumber(d.getMinutes(), 2) + ':' +
                        padNumber(d.getSeconds(), 2),
-            miliseconds = padNumber(d.getMilliseconds(), 3);
+            milliseconds = padNumber(d.getMilliseconds(), 3),
+            $group = this.$lastGroup;
 
-        var _addRowInternal = function ($group, baseTime, milliseconds, args, index) {
-            // args = Array.prototype.slice.call(args);
-            // console.log(args);
-            var $row = $('<tr />');
-            $row.append('<th class="rw_time-base">' + baseTime + '</th>');
-            $row.append('<th class="rw_time-milli">.' + milliseconds + '</th>');
-            $row.append('<th class="rw_warnings"><i class="fa fa-exclamation-triangle"></i></th>');
-            args.forEach(function(arg, i) {
-
-                // TODO this is async, make sure it is executed in order
-                Inspector.Runtime.evaluate('__recognizer' + tracerId + '._calls[' + index + '].args[' + i + ']', 'console', false, false, undefined, undefined, undefined, true /* generate preview */, function (res) {
-                    var result = WebInspector.RemoteObject.fromPayload(res.result);
-                    var message = new WebInspector.ConsoleCommandResult(result, !!res.wasThrown, '', WebInspector.Linkifier, undefined, undefined, undefined);
-                    $row.append($('<td>').append(message.toMessageElement()));
-                });
+        var $row = $('<tr />')
+            .append('<th class="rw_time-base">' + baseTime + '</th>')
+            .append('<th class="rw_time-milli">.' + milliseconds + '</th>')
+            .append('<th class="rw_warnings"><i class="fa fa-exclamation-triangle"></i></th>');
+        for (var i = 0; i < argsCount; i++) {
+            // TODO this is async, make sure it is executed in order
+            Inspector.Runtime.evaluate('__recognizer' + tracerId + '._args[' + index + '][' + i + ']', 'console', false, false, undefined, undefined, undefined, true /* generate preview */, function (res) {
+                var result = WebInspector.RemoteObject.fromPayload(res.result);
+                var message = new WebInspector.ConsoleCommandResult(result, !!res.wasThrown, '', WebInspector.Linkifier, undefined, undefined, undefined);
+                $row.append($('<td>').append(message.toMessageElement()));
             });
-            return $row.appendTo($group);
-        };
-
-        _addRowInternal(this.$lastGroup, baseTime, miliseconds, args, index);
+        }
+        return $row.appendTo($group);
     };
 
     LogWidget.prototype.toggle = function(show) {

@@ -10,7 +10,6 @@ define(function (require, exports, module) {
         DocumentManager = brackets.getModule('document/DocumentManager'),
         EditorManager   = brackets.getModule('editor/EditorManager'),
         ProjectManager  = brackets.getModule('project/ProjectManager'),
-        FileSystem      = brackets.getModule('filesystem/FileSystem'),
         UI = require('src/UI'),
         WidgetManager = require('src/WidgetManager'),
         TracerManager = require('src/TracerManager');

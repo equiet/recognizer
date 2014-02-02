@@ -8,15 +8,18 @@ var __recognizer{{tracerId}} = (function () {
 
     function Tracer() {
         this._calls = [];
+        this._args = [];
     }
     Tracer.prototype = {
         logEntry: function (location, args) {
             this._calls.push({
                 index: this._calls.length,
                 position: location,
-                args: Array.prototype.slice.call(args),
+                // args: Array.prototype.slice.call(args),
+                argsCount: args.length,
                 time: Date.now()
             });
+            this._args.push(Array.prototype.slice.call(args));
         },
         getCalls: function (since) {
             var calls = this._calls.filter(function(call) {
