@@ -59,10 +59,8 @@ define(function (require, exports, module) {
 
                 // TODO this is async, make sure it is executed in order
                 Inspector.Runtime.evaluate('__recognizer' + tracerId + '._calls[' + index + '].args[' + i + ']', 'console', false, false, undefined, undefined, undefined, true /* generate preview */, function (res) {
-                    console.log('evaluated', arguments);
                     var result = WebInspector.RemoteObject.fromPayload(res.result);
-                    var message = new WebInspector.ConsoleCommandResult(result, !!res.wasThrown, 'window', WebInspector.Linkifier, undefined, undefined, undefined);
-                    console.log('message', message.toMessageElement());
+                    var message = new WebInspector.ConsoleCommandResult(result, !!res.wasThrown, '', WebInspector.Linkifier, undefined, undefined, undefined);
                     $row.append($('<td>').append(message.toMessageElement()));
                 });
             });

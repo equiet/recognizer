@@ -20,25 +20,25 @@ define(function (require, exports, module) {
     function testInspector() {
 
         window.RuntimeAgent = Inspector.Runtime;
-        // RuntimeAgent.getProperties = function() {
+        // RuntimeAgent.getProperties = function(res) {
         //     return Inspector.Runtime.getProperties(arguments[0], arguments[1], function(res) {
         //         arguments[3].call(this, res.result, res.internalProperties);
         //     });
         // }
 
-        var _printResult = function(result, wasThrown, originatingCommand)
-        {
-            console.log('result', result);
-            if (!result)
-                return;
+        // var _printResult = function(result, wasThrown, originatingCommand)
+        // {
+        //     console.log('result', result);
+        //     if (!result)
+        //         return;
 
-            var message = new WebInspector.ConsoleCommandResult(result, wasThrown, originatingCommand, WebInspector.Linkifier, undefined, undefined, undefined);
-            console.log('message', message);
-            console.log('toMessageElement', message.toMessageElement());
-            $('#project-files-container').append(message.toMessageElement());
-                // WebInspector.console.addMessage(message);
+        //     var message = new WebInspector.ConsoleCommandResult(result, wasThrown, originatingCommand, WebInspector.Linkifier, undefined, undefined, undefined);
+        //     console.log('message', message);
+        //     console.log('toMessageElement', message.toMessageElement());
+        //     $('#project-files-container').append(message.toMessageElement());
+        //         // WebInspector.console.addMessage(message);
 
-        };
+        // };
 
         // Inspector.Runtime.evaluate('window', 'console', false, false, undefined, undefined, undefined, true /* generate preview */, function (res) {
         //     // res = {result, wasThrown}
@@ -55,6 +55,8 @@ define(function (require, exports, module) {
 
     ExtensionUtils.loadStyleSheet(module, 'main.less');
     ExtensionUtils.loadStyleSheet(module, 'src/styles/font-awesome.css');
+
+    ExtensionUtils.loadStyleSheet(module, 'thirdparty/styles/inspector.css');
 
     var hostEditor;
 
