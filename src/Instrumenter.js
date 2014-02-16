@@ -197,12 +197,10 @@ define(function (require, exports, module) {
 
         estraverse.traverse(ast, {
             enter: function(node, parent) {
-                if (node.type === 'CallExpression' && parent.type === 'ExpressionStatement') {
-                    var loc = $.extend(true, {}, parent.loc);
-                    loc.end.column -= 1;
+                if (node.type === 'CallExpression') {
                     objects.push({
                         code: escodegen.generate(parent, {format: {compact: true}}),
-                        loc: loc
+                        loc: node.loc
                     });
                 }
             }
