@@ -9,6 +9,8 @@ var __recognizer{{tracerId}} = (function () {
     function Tracer() {
         this._calls = [];
         this._args = [];
+
+        this._probeCalls = [];
     }
     Tracer.prototype = {
         logEntry: function (location, args) {
@@ -29,6 +31,14 @@ var __recognizer{{tracerId}} = (function () {
         },
         getCallCount: function () {
             return this._calls.length;
+        },
+        logProbe: function (location, result) {
+            this._probeCalls.push({
+                index: this._calls.length,
+                position: location,
+                result: result,
+                time: Date.now()
+            });
         },
         test: function () {
             if (console) {

@@ -7,7 +7,8 @@ define(function (require, exports, module) {
     var TracedDocument = require('src/TracedDocument').TracedDocument;
 
     var esprima = require('thirdparty/esprima'),
-        escodegen = require('thirdparty/escodegen');
+        escodegen = require('thirdparty/escodegen'),
+        estraverse = require('thirdparty/estraverse');
 
     var tracerSnippet = require('text!src/snippets/tracer.js');
 
@@ -19,16 +20,27 @@ define(function (require, exports, module) {
             tolerant: false
         });
 
+        var inspectableObjects = [];
+        // inspectableObjects = inspectableObjects.concat(_findInspectableObjects(astCopy));
+        inspectableObjects = inspectableObjects.concat(_findFunctionCalls(ast));
+        inspectableObjects = inspectableObjects.filter(function(obj) { // Proble only one-liners for now
+            return obj.loc.start.line === obj.loc.end.line;
+        });
+
+        console.log(inspectableObjects);
+
         // TODO: Use estraverse
-        ast = _instrumentFunctionDeclarations(ast);
-        ast = _instrumentFunctionExpressions(ast);
+        var instrumentedAst = $.extend(true, {}, ast);
+        instrumentedAst = _instrumentFunctionDeclarations(instrumentedAst);
+        instrumentedAst = _instrumentFunctionExpressions(instrumentedAst);
 
         var tracerId = Math.floor(Math.random() * 1000 * 1000 * 1000);
 
         return new TracedDocument(
             filename,
             tracerId,
-            (tracerSnippet + escodegen.generate(ast)).replace(/\{\{tracerId\}\}/g, tracerId)
+            (tracerSnippet + escodegen.generate(instrumentedAst)).replace(/\{\{tracerId\}\}/g, tracerId),
+           inspectableObjects
         );
 
     }
@@ -149,7 +161,59 @@ define(function (require, exports, module) {
         };
     }
 
+    // function _findInspectableObjects(ast) {
+    //     var objects = [];
+
+    //     function getName(node) {
+    //         if (node.name) {
+    //             return node.name;
+    //         }
+    //         if (node.type === 'MemberExpression') {
+    //             return getName(node.object) + '.' + getName(node.property);
+    //         }
+    //         if (node.type === 'CallExpression') {
+    //             var args = node.arguments.map(function (arg) { return arg.value; })
+    //             return getName(node.callee) + '(' + args.join(', ') + ')';
+    //         }
+    //     }
+
+    //     estraverse.traverse(ast, {
+    //         enter: function(node, parent) {
+    //             if (node.type === 'MemberExpression') {
+    //                 objects.push({
+    //                     name: getName(node),
+    //                     loc: node.loc
+    //                 });
+    //             }
+    //         }
+    //     });
+
+    //     return objects;
+    // }
+
+
+    function _findFunctionCalls(ast) {
+        var objects = [];
+
+        estraverse.traverse(ast, {
+            enter: function(node, parent) {
+                if (node.type === 'CallExpression' && parent.type === 'ExpressionStatement') {
+                    var loc = $.extend(true, {}, parent.loc);
+                    loc.end.column -= 1;
+                    objects.push({
+                        code: escodegen.generate(parent, {format: {compact: true}}),
+                        loc: loc
+                    });
+                }
+            }
+        });
+
+        return objects;
+    }
 
     exports.instrument = instrument;
+
+    // For testing
+    // exports._findInspectableObjects = _findInspectableObjects;
 
 });

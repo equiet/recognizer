@@ -4,13 +4,18 @@
 define(function (require, exports, module) {
     'use strict';
 
-    var Inspector = brackets.getModule('LiveDevelopment/Inspector/Inspector');
+    var Inspector = brackets.getModule('LiveDevelopment/Inspector/Inspector'),
+        EditorManager = brackets.getModule('editor/EditorManager');
 
-    function TracedDocument(filename, tracerId, code) {
+    function TracedDocument(filename, tracerId, code, instrumentableObjects) {
         this.filename = filename;
         this.tracerId = tracerId;
         this.code = code;
+        this.instrumentableObjects = instrumentableObjects;
         this._state = 'disconnected';
+        this.hostEditor = EditorManager.getCurrentFullEditor();
+
+        this.insertProbes();
     }
 
     TracedDocument.prototype.connect = function() {
@@ -45,6 +50,21 @@ define(function (require, exports, module) {
 
         }.bind(this));
 
+    };
+
+    TracedDocument.prototype.insertProbes = function() {
+        this.instrumentableObjects.forEach(function(obj, index) {
+            var marker = this.hostEditor._codeMirror.markText(
+                {line: obj.loc.start.line - 1, ch: obj.loc.start.column},
+                {line: obj.loc.end.line - 1, ch: obj.loc.end.column},
+                {
+                    className: 'recognizer-probe ' + 'is-probe-' + index,
+                }
+            );
+        }.bind(this));
+        $('.recognizer-probe').on('mouseover', function(e) {
+            console.log(e);
+        });
     };
 
     exports.TracedDocument = TracedDocument;

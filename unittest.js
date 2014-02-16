@@ -1,11 +1,15 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var main = require("main");
+    var Instrumenter = require('src/Instrumenter');
+    var sampleAst = JSON.parse(require('text!test/fixtures/sampleAst.json'));
 
-    describe("Hello World", function () {
-        it("should expose a handleHelloWorld method", function () {
-            expect(main.handleHelloWorld).not.toBeNull();
+    describe('Instrumentation', function() {
+
+        it('should return inspectableObjects', function() {
+            // TODO: expect()
         });
+
     });
+
 });

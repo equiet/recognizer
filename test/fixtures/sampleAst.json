@@ -1,0 +1,128 @@
+{
+    "type": "Program",
+    "body": [
+        {
+            "type": "VariableDeclaration",
+            "declarations": [
+                {
+                    "type": "VariableDeclarator",
+                    "id": {
+                        "type": "Identifier",
+                        "name": "a",
+                        "loc": {
+                            "start": {
+                                "line": 1,
+                                "column": 4
+                            },
+                            "end": {
+                                "line": 1,
+                                "column": 5
+                            }
+                        }
+                    },
+                    "init": {
+                        "type": "MemberExpression",
+                        "computed": false,
+                        "object": {
+                            "type": "MemberExpression",
+                            "computed": false,
+                            "object": {
+                                "type": "Identifier",
+                                "name": "sth",
+                                "loc": {
+                                    "start": {
+                                        "line": 1,
+                                        "column": 8
+                                    },
+                                    "end": {
+                                        "line": 1,
+                                        "column": 11
+                                    }
+                                }
+                            },
+                            "property": {
+                                "type": "Identifier",
+                                "name": "param",
+                                "loc": {
+                                    "start": {
+                                        "line": 1,
+                                        "column": 12
+                                    },
+                                    "end": {
+                                        "line": 1,
+                                        "column": 17
+                                    }
+                                }
+                            },
+                            "loc": {
+                                "start": {
+                                    "line": 1,
+                                    "column": 8
+                                },
+                                "end": {
+                                    "line": 1,
+                                    "column": 17
+                                }
+                            }
+                        },
+                        "property": {
+                            "type": "Identifier",
+                            "name": "nested",
+                            "loc": {
+                                "start": {
+                                    "line": 1,
+                                    "column": 18
+                                },
+                                "end": {
+                                    "line": 1,
+                                    "column": 24
+                                }
+                            }
+                        },
+                        "loc": {
+                            "start": {
+                                "line": 1,
+                                "column": 8
+                            },
+                            "end": {
+                                "line": 1,
+                                "column": 24
+                            }
+                        }
+                    },
+                    "loc": {
+                        "start": {
+                            "line": 1,
+                            "column": 4
+                        },
+                        "end": {
+                            "line": 1,
+                            "column": 24
+                        }
+                    }
+                }
+            ],
+            "kind": "var",
+            "loc": {
+                "start": {
+                    "line": 1,
+                    "column": 0
+                },
+                "end": {
+                    "line": 1,
+                    "column": 25
+                }
+            }
+        }
+    ],
+    "loc": {
+        "start": {
+            "line": 1,
+            "column": 0
+        },
+        "end": {
+            "line": 1,
+            "column": 25
+        }
+    }
+}
