@@ -149,13 +149,13 @@
 	font-family: "Source Sans Pro";
 	margin: 10px 20px;
 	margin-left: 87px;
-	border-radius: 2px;
 	background: #fff;
-	box-shadow: inset 1px 1px 0 rgba(0,0,0,0.1), inset -1px -1px 0 rgba(0,0,0,0.1);
 }
 .rw_scroll-container {
 	position: absolute;
 	height: 100%;
+	border-radius: 2px;
+	box-shadow: inset 1px 1px 0 rgba(0,0,0,0.1), inset -1px -1px 0 rgba(0,0,0,0.1);
 
 	&.has-scroll-up:before {
 		content: "";
@@ -276,9 +276,6 @@ th.rw_warnings {
 }
 
 .recognizer-probe {
-	background: #55ee22;
-
-	&:hover {
-		background: #000;
-	}
+	// background: #55ee22;
+	border-bottom: 1px dotted rgba(0,0,0,0.3);
 }

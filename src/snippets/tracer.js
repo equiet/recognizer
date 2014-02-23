@@ -10,7 +10,7 @@ var __recognizer{{tracerId}} = (function () {
         this._calls = [];
         this._args = [];
 
-        this._probeCalls = [];
+        this._probeValues = {};
     }
     Tracer.prototype = {
         logEntry: function (location, args) {
@@ -33,12 +33,11 @@ var __recognizer{{tracerId}} = (function () {
             return this._calls.length;
         },
         logProbe: function (location, result) {
-            this._probeCalls.push({
-                index: this._calls.length,
-                position: location,
-                result: result,
-                time: Date.now()
-            });
+            this._probeValues[location.toString()] = result;
+            return result;
+        },
+        getProbeValues: function () {
+            return this._probeValues;
         },
         test: function () {
             if (console) {
