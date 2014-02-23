@@ -46,6 +46,23 @@ define(function (require, exports, module) {
                 return;
             }
 
+            console.log(res.result);
+            callback(false, JSON.parse(res.result.value), this.tracerId);
+
+        }.bind(this));
+
+    };
+
+    TracedDocument.prototype.getProbeValues = function(callback) {
+
+        Inspector.Runtime.evaluate('__recognizer' + this.tracerId + '.getProbeValues()', function (res) {
+
+            if (res.wasThrown) {
+                callback(true, res.result);
+                return;
+            }
+
+            console.log(res.result);
             callback(false, JSON.parse(res.result.value), this.tracerId);
 
         }.bind(this));

@@ -299,8 +299,8 @@ define(function (require, exports, module) {
                     return _getProbeAst(
                         node.loc.start.line,
                         node.loc.start.column,
-                        node.loc.start.line,
-                        node.loc.start.column,
+                        node.loc.end.line,
+                        node.loc.end.column,
                         nodeCopy
                     );
                 }

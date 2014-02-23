@@ -182,6 +182,7 @@
 	width: 100%;
 	height: 100%;
 	overflow: scroll;
+	overflow: hidden;
 }
 .rw_table {
 	position: relative;
@@ -202,6 +203,13 @@
 			padding-bottom: 8px;
 		}
 	}
+	// tr {
+	// 	display: none;
+
+	// 	&:nth-last-child(-n+5) {
+	// 		display: table-row;
+	// 	}
+	// }
 	th {
 		background: rgba(0,0,0,0.02);
 		padding: 3px 0;
@@ -209,15 +217,6 @@
 }
 .rw_group {
 	border-bottom: 1px solid rgba(0,0,0,0.04);
-
-	tr {
-		// display: none;
-		dispaly: table-row;
-
-		&:nth-child(-n+3) {
-			display: table-row;
-		}
-	}
 }
 th.rw_time-base {
 	// font-size: 0 !important;
@@ -245,6 +244,10 @@ th.rw_warnings {
 		font-size: 10px;
 		color: @recognizerYellow;
 	}
+}
+.rw_no-arguments {
+	font-style: italic;
+	color: #666;
 }
 
 
@@ -278,4 +281,20 @@ th.rw_warnings {
 .recognizer-probe {
 	// background: #55ee22;
 	border-bottom: 1px dotted rgba(0,0,0,0.3);
+}
+.recognizer-probe-widget {
+	border: 1px solid rgba(0,0,0,0.1);
+	height: 20px;
+	border-radius: 2px;
+	margin: 0 4px;
+	padding: 0 3px;
+
+	.console-user-command-result {
+		display: inline-block;
+	}
+}
+
+.console-message .section > .header {
+	min-height: 15px;
+	height: 15px;
 }

@@ -37,7 +37,7 @@ var __recognizer{{tracerId}} = (function () {
             return result;
         },
         getProbeValues: function () {
-            return this._probeValues;
+            return stringify(Object.keys(this._probeValues));
         },
         test: function () {
             if (console) {

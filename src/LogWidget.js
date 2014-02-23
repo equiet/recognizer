@@ -19,23 +19,23 @@ define(function (require, exports, module) {
         this.htmlContent = window.document.createElement("div");
         this.$htmlContent = $(this.htmlContent).addClass("inline-widget recognizer-widget");
 
-        var $scrollContainer = this.addScrollContainer(this.$htmlContent);
-        var $table = this.addTable($scrollContainer);
-        var $group = this.addGroup($table);
+        this.$scrollContainer = this.addScrollContainer(this.$htmlContent);
+        this.$table = this.addTable(this.$scrollContainer);
+        this.$group = this.addGroup(this.$table);
 
-        this.$lastGroup = $group;
+        this.$lastGroup = this.$group;
 
         // Register scroll event
-        $scrollContainer.on('scroll', function () {
+        this.$scrollContainer.on('scroll', function (e) {
             if ($(this).scrollTop() > 0) {
-                $scrollContainer.parent().addClass('has-scroll-up');
+                this.$scrollContainer.parent().addClass('has-scroll-up');
             } else {
-                $scrollContainer.parent().removeClass('has-scroll-up');
+                this.$scrollContainer.parent().removeClass('has-scroll-up');
             }
-            if ($(this).height() + $(this).scrollTop() < $table.height()) {
-                $scrollContainer.parent().addClass('has-scroll-down');
+            if ($(this).height() + $(this).scrollTop() < this.$table.height()) {
+                this.$scrollContainer.parent().addClass('has-scroll-down');
             } else {
-                $scrollContainer.parent().removeClass('has-scroll-down');
+                this.$scrollContainer.parent().removeClass('has-scroll-down');
             }
         });
 
@@ -53,6 +53,7 @@ define(function (require, exports, module) {
             .append('<th class="rw_time-base">' + baseTime + '</th>')
             .append('<th class="rw_time-milli">.' + milliseconds + '</th>')
             .append('<th class="rw_warnings"><i class="fa fa-exclamation-triangle"></i></th>');
+
         for (var i = 0; i < argsCount; i++) {
             // TODO this is async, make sure it is executed in order
             Inspector.Runtime.evaluate('__recognizer' + tracerId + '._args[' + index + '][' + i + ']', 'console', false, false, undefined, undefined, undefined, true /* generate preview */, function (res) {
@@ -61,7 +62,26 @@ define(function (require, exports, module) {
                 $row.append($('<td>').append(message.toMessageElement()));
             });
         }
-        return $row.appendTo($group);
+
+        if (argsCount === 0) {
+            $('<span>').addClass('rw_no-arguments')
+                       .html('no arguments')
+                       .appendTo($('<td>').appendTo($row));
+        }
+
+        $row.appendTo($group);
+
+        this.$table.find('tr:not(:nth-last-child(-n+5))').remove();
+
+        // if (this.$table.find('tr').length > 5) {
+        //     this.$table.addClass('has-many-rows');
+        // }
+
+        if (this.widget) {
+            this.widget.setHeight(this.$table.height());
+        }
+
+        return $row;
     };
 
     LogWidget.prototype.toggle = function(show) {
@@ -70,6 +90,7 @@ define(function (require, exports, module) {
             return this.hostEditor.addInlineWidget(
                 {line: this.position[2] - 1, ch: 0},
                 this.widget
+
             );
         } else {
             this.widget.close();
@@ -128,8 +149,6 @@ define(function (require, exports, module) {
                 e.stopImmediatePropagation();
             }
         });
-
-
     }
 
 
@@ -143,7 +162,7 @@ define(function (require, exports, module) {
      * Initial height of inline widget in pixels. Can be changed later via hostEditor.setInlineWidgetHeight()
      * @type {number}
      */
-    InlineWidget.prototype.height = 140;
+    InlineWidget.prototype.height = 20;
 
     /**
      * Closes this inline widget and all its contained Editors
@@ -176,9 +195,12 @@ define(function (require, exports, module) {
      */
     InlineWidget.prototype.onAdded = function () {
         $(this).triggerHandler("add");
-        this.hostEditor.setInlineWidgetHeight(this, this.height);
+        this.hostEditor.setInlineWidgetHeight(this, this.$htmlContent.height());
     };
 
+    InlineWidget.prototype.setHeight = function (height) {
+        this.hostEditor.setInlineWidgetHeight(this, height);
+    };
 
     /**
      * Called when the editor containing the inline is made visible.

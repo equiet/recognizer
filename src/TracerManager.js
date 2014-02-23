@@ -65,6 +65,15 @@ define(function (require, exports, module) {
                         WidgetManager.getWidget(logItem.position).addEntry(logItem, tracerId);
                     });
                 });
+                tracedDocuments[key].getProbeValues(function(err, probes, tracerId) {
+                    if (err) {
+                        console.log('[recognizer] Error retrieving probe values', probeValues);
+                        return;
+                    }
+                    probes.forEach(function(position) {
+                        WidgetManager.getProbeWidget(position).updateValue(position, tracerId);
+                    });
+                });
             });
 
             timestamp = Date.now();
