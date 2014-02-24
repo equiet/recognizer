@@ -22,7 +22,6 @@ define(function (require, exports, module) {
     ProbeWidget.prototype.updateValue = function (position, tracerId) {
 
         Inspector.Runtime.evaluate('__recognizer' + tracerId + '._probeValues["' + position + '"]', 'console', false, false, undefined, undefined, undefined, true /* generate preview */, function (res) {
-            console.log(res.result);
             var result = WebInspector.RemoteObject.fromPayload(res.result);
             var message = new WebInspector.ConsoleCommandResult(result, !!res.wasThrown, '', WebInspector.Linkifier, undefined, undefined, undefined);
             this.$el.html(message.toMessageElement());

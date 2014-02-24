@@ -15,7 +15,7 @@ define(function (require, exports, module) {
         this._state = 'disconnected';
         this.hostEditor = EditorManager.getCurrentFullEditor();
 
-        this.insertProbes();
+        // this.insertProbes();
     }
 
     TracedDocument.prototype.connect = function() {
@@ -46,7 +46,6 @@ define(function (require, exports, module) {
                 return;
             }
 
-            console.log(res.result);
             callback(false, JSON.parse(res.result.value), this.tracerId);
 
         }.bind(this));
@@ -62,7 +61,6 @@ define(function (require, exports, module) {
                 return;
             }
 
-            console.log(res.result);
             callback(false, JSON.parse(res.result.value), this.tracerId);
 
         }.bind(this));

@@ -283,7 +283,7 @@ th.rw_warnings {
 	border-bottom: 1px dotted rgba(0,0,0,0.3);
 }
 .recognizer-probe-widget {
-	border: 1px solid rgba(0,0,0,0.1);
+	border: 1px solid rgba(0,0,0,0.15);
 	height: 20px;
 	border-radius: 2px;
 	margin: 0 4px;
@@ -291,6 +291,11 @@ th.rw_warnings {
 
 	.console-user-command-result {
 		display: inline-block;
+	}
+	.console-user-command-result .source-code {
+		white-space: nowrap;
+		text-overflow: ellipsis;
+		max-width: 100px;
 	}
 }
 
