@@ -18,7 +18,6 @@ Yes (kind of).
 ![Design](https://raw.github.com/equiet/recognizer/master/recognizer.png)
 <!-- ![Design](https://raw.github.com/equiet/recognizer/master/recognizer_concept.png) -->
 
-
 ## Scope
 
 - automatic debugging, code inspection
@@ -27,3 +26,10 @@ Yes (kind of).
 - code flow visualization
 - using tests to define safe patterns of function usage
 - code documentation
+
+## TODO
+- instrument more calls
+- refresh tracerId and rewrite .recognizer.js on every run
+- shorten probes (display full on hover perhaps?)
+- cleanup
+- better object inspection

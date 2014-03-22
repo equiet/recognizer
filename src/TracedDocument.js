@@ -20,6 +20,7 @@ define(function (require, exports, module) {
 
     TracedDocument.prototype.connect = function() {
 
+        console.log(this.tracerId);
         Inspector.Runtime.evaluate('__recognizer' + this.tracerId + '.connect()', function (res) {
             if (!res.wasThrown) {
                 this._objectId = res.result.objectId;
