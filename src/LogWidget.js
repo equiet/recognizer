@@ -52,7 +52,8 @@ define(function (require, exports, module) {
         var $row = $('<tr />')
             .append('<th class="rw_time-base">' + baseTime + '</th>')
             .append('<th class="rw_time-milli">.' + milliseconds + '</th>')
-            .append('<th class="rw_warnings"><i class="fa fa-exclamation-triangle"></i></th>');
+            // .append('<th class="rw_warnings"><i class="fa fa-exclamation-triangle"></i></th>');
+            .append('<th class="rw_warnings"></th>');
 
         for (var i = 0; i < argsCount; i++) {
             // TODO this is async, make sure it is executed in order
