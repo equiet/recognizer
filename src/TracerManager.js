@@ -7,8 +7,7 @@ define(function (require, exports, module) {
         WidgetManager = require('src/WidgetManager');
 
     var tracedDocuments = {},
-        refreshInterval,
-        _logStorage = [];
+        refreshInterval;
 
     function registerFile(file, callback) {
 
@@ -45,9 +44,18 @@ define(function (require, exports, module) {
         Object.keys(tracedDocuments).forEach(function(key) {
             tracedDocuments[key].connect();
         });
+        _listen();
     }
 
-    function listen() {
+    function disconnectAll() {
+        WidgetManager.removeAll();
+        Object.keys(tracedDocuments).forEach(function(key) {
+            tracedDocuments[key].disconnect();
+        });
+        _stopListening();
+    }
+
+    function _listen() {
         var timestamp = 0;
 
         refreshInterval = setInterval(function () {
@@ -81,14 +89,13 @@ define(function (require, exports, module) {
         }, 100);
     }
 
-    function disconnectAll() {
-        WidgetManager.removeAll();
+    function _stopListening() {
+        clearInterval(refreshInterval);
     }
 
     exports.registerFile = registerFile;
     exports.unregisterFile = unregisterFile;
     exports.connectAll = connectAll;
-    exports.listen = listen;
     exports.disconnectAll = disconnectAll;
 
 });

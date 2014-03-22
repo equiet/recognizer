@@ -33,6 +33,10 @@ define(function (require, exports, module) {
             widgets[id].remove();
             delete widgets[id];
         });
+        Object.keys(probeWidgets).forEach(function(id) {
+            probeWidgets[id].remove();
+            delete probeWidgets[id];
+        });
     }
 
     exports.getWidget = getWidget;

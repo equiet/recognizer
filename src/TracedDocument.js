@@ -19,8 +19,6 @@ define(function (require, exports, module) {
     }
 
     TracedDocument.prototype.connect = function() {
-
-        console.log(this.tracerId);
         Inspector.Runtime.evaluate('__recognizer' + this.tracerId + '.connect()', function (res) {
             if (!res.wasThrown) {
                 this._objectId = res.result.objectId;
@@ -31,7 +29,10 @@ define(function (require, exports, module) {
                 console.log('[recognizer] Error connecting to tracer in ' + this.filename, res);
             }
         }.bind(this));
+    };
 
+    TracedDocument.prototype.disconnect = function() {
+        this._state = 'disconnected';
     };
 
     TracedDocument.prototype.isReady = function() {

@@ -29,7 +29,5 @@ Yes (kind of).
 
 ## TODO
 - instrument more calls
-- refresh tracerId and rewrite .recognizer.js on every run
-- shorten probes (display full on hover perhaps?)
-- cleanup
+- shorten probes (display full on mouseover perhaps?)
 - better object inspection
