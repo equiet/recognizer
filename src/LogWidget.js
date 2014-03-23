@@ -4,14 +4,15 @@ define(function (require, exports, module) {
     var EditorManager = brackets.getModule('editor/EditorManager'),
         KeyEvent = brackets.getModule('utils/KeyEvent'),
         Async = brackets.getModule('utils/Async'),
-        Inspector = brackets.getModule('LiveDevelopment/Inspector/Inspector');
+        Inspector = brackets.getModule('LiveDevelopment/Inspector/Inspector'),
+        DocumentManager = brackets.getModule('document/DocumentManager');
 
     var WebInspector = require('thirdparty/WebInspector');
 
-    function LogWidget(position) {
+    function LogWidget(filepath, position) {
         var self = this;
 
-        this.hostEditor = EditorManager.getCurrentFullEditor();
+        this.hostEditor = DocumentManager.getOpenDocumentForPath(filepath)._masterEditor;
         this.widget = null;
         this.position = position;
         this._toggleQueue = new Async.PromiseQueue();

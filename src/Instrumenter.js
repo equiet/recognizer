@@ -13,7 +13,7 @@ define(function (require, exports, module) {
     var tracerSnippet = require('text!src/snippets/tracer.js');
 
 
-    function instrument(filename, code) {
+    function instrument(file, code) {
 
         var ast = esprima.parse(code, {
             loc: true,
@@ -41,7 +41,7 @@ define(function (require, exports, module) {
         var tracerId = Math.floor(Math.random() * 1000 * 1000 * 1000);
 
         return new TracedDocument(
-            filename,
+            file,
             tracerId,
             (tracerSnippet + escodegen.generate(instrumentedAst)).replace(/\{\{tracerId\}\}/g, tracerId),
             // inspectableObjects

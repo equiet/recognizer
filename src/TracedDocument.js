@@ -5,18 +5,26 @@ define(function (require, exports, module) {
     'use strict';
 
     var Inspector = brackets.getModule('LiveDevelopment/Inspector/Inspector'),
-        EditorManager = brackets.getModule('editor/EditorManager');
+        EditorManager = brackets.getModule('editor/EditorManager'),
+        DocumentManager = brackets.getModule('document/DocumentManager');
 
-    function TracedDocument(filename, tracerId, code, instrumentableObjects) {
-        this.filename = filename;
+    function TracedDocument(file, tracerId, code, instrumentableObjects) {
+        this.file = file;
         this.tracerId = tracerId;
         this.code = code;
         this.instrumentableObjects = instrumentableObjects;
         this._state = 'disconnected';
-        this.hostEditor = EditorManager.getCurrentFullEditor();
+        DocumentManager.getDocumentForPath(file.fullPath).then(function(doc) {
+            this.hostEditor = doc._masterEditor;
+        }.bind(this));
+
 
         // this.insertProbes();
     }
+
+    TracedDocument.prototype.isReady = function() {
+        return this._state === 'connected';
+    };
 
     TracedDocument.prototype.connect = function() {
         Inspector.Runtime.evaluate('__recognizer' + this.tracerId + '.connect()', function (res) {
@@ -24,19 +32,15 @@ define(function (require, exports, module) {
                 this._objectId = res.result.objectId;
                 this._state = 'connected';
                 $(exports).trigger('connected');
-                console.log('[recognizer] Connected to tracer in ' + this.filename);
+                console.log('[recognizer] Connected to tracer in ' + this.file.name);
             } else {
-                console.log('[recognizer] Error connecting to tracer in ' + this.filename, res);
+                console.log('[recognizer] Error connecting to tracer in ' + this.file.name, res);
             }
         }.bind(this));
     };
 
     TracedDocument.prototype.disconnect = function() {
         this._state = 'disconnected';
-    };
-
-    TracedDocument.prototype.isReady = function() {
-        return this._state === 'connected';
     };
 
     TracedDocument.prototype.getLog = function(since, callback) {
@@ -48,7 +52,7 @@ define(function (require, exports, module) {
                 return;
             }
 
-            callback(false, JSON.parse(res.result.value), this.tracerId);
+            callback(false, JSON.parse(res.result.value));
 
         }.bind(this));
 
@@ -79,7 +83,7 @@ define(function (require, exports, module) {
                 }
             );
         }.bind(this));
-        $('.recognizer-probe').on('mouseover', function(e) {
+        $('body').delegate('.recognizer-probe-widget', 'mouseover', function(e) {
             console.log(e);
         });
     };

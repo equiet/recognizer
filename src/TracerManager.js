@@ -24,7 +24,7 @@ define(function (require, exports, module) {
         var newFile = FileSystem.getFileForPath(newPath);
 
         file.read({}, function(err, data, stat) {
-            var tracedDocument = Instrumenter.instrument(file.name, data);
+            var tracedDocument = Instrumenter.instrument(file, data);
             newFile.write(tracedDocument.code, {});
 
             tracedDocuments[file.fullPath] = tracedDocument;
@@ -61,25 +61,26 @@ define(function (require, exports, module) {
         refreshInterval = setInterval(function () {
 
             Object.keys(tracedDocuments).forEach(function(key) {
-                if (!tracedDocuments[key].isReady()) {
+                var tracedDocument = tracedDocuments[key];
+                if (!tracedDocument.isReady()) {
                     return;
                 }
-                tracedDocuments[key].getLog(timestamp, function(err, log, tracerId) {
+                tracedDocument.getLog(timestamp, function(err, log) {
                     if (err) {
-                        console.log('[recognizer] Error retrieving log', log);
+                        console.log('[recognizer] Error retrieving log', err);
                         return;
                     }
                     log.forEach(function(logItem) {
-                        WidgetManager.getWidget(logItem.position).addEntry(logItem, tracerId);
+                        WidgetManager.getWidget(tracedDocument.file.fullPath, logItem.position).addEntry(logItem, tracedDocument.tracerId);
                     });
                 });
-                tracedDocuments[key].getProbeValues(function(err, probes, tracerId) {
+                tracedDocument.getProbeValues(function(err, probes) {
                     if (err) {
-                        console.log('[recognizer] Error retrieving probe values', probeValues);
+                        console.log('[recognizer] Error retrieving probe values', err);
                         return;
                     }
                     probes.forEach(function(position) {
-                        WidgetManager.getProbeWidget(position).updateValue(position, tracerId);
+                        WidgetManager.getProbeWidget(tracedDocument.file.fullPath, position).updateValue(position, tracedDocument.tracerId);
                     });
                 });
             });

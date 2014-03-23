@@ -8,21 +8,21 @@ define(function (require, exports, module) {
     var widgets = {},
         probeWidgets = {};
 
-    function getWidget(position) {
+    function getWidget(filepath, position) {
         var id = JSON.stringify(position);
 
         if (widgets[id] === undefined) {
-            widgets[id] = new FunctionWidget(position);
+            widgets[id] = new FunctionWidget(filepath, position);
         }
 
         return widgets[id];
     }
 
-    function getProbeWidget(position) {
+    function getProbeWidget(filepath, position) {
         var id = JSON.stringify(position);
 
         if (probeWidgets[id] === undefined) {
-            probeWidgets[id] = new ProbeWidget(position);
+            probeWidgets[id] = new ProbeWidget(filepath, position);
         }
 
         return probeWidgets[id];

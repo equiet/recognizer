@@ -5,10 +5,9 @@ define(function (require, exports, module) {
         CounterWidget = require('src/CounterWidget').CounterWidget,
         LogWidget = require('src/LogWidget').LogWidget;
 
-    function FunctionWidget(position) {
-        this.hostEditor = EditorManager.getCurrentFullEditor();
-        this.counterWidget = new CounterWidget(position);
-        this.logWidget = new LogWidget(position);
+    function FunctionWidget(filepath, position) {
+        this.counterWidget = new CounterWidget(filepath, position);
+        this.logWidget = new LogWidget(filepath, position);
 
         this._expanded = false;
 

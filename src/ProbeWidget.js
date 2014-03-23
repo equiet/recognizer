@@ -3,20 +3,23 @@ define(function (require, exports, module) {
 
     var EditorManager = brackets.getModule('editor/EditorManager'),
         Inspector = brackets.getModule('LiveDevelopment/Inspector/Inspector'),
-        WebInspector = require('thirdparty/WebInspector');
+        WebInspector = require('thirdparty/WebInspector'),
+        DocumentManager = brackets.getModule('document/DocumentManager');
 
-    function ProbeWidget(position) {
-        var _codeMirror = EditorManager.getCurrentFullEditor()._codeMirror;
-
+    function ProbeWidget(filepath, position) {
         this.$el = $('<span />').addClass('recognizer-probe-widget');
-
         position = position.split(',');
 
-        this.marker = _codeMirror.setBookmark(
-            {line: parseInt(position[2], 10) - 1, ch: parseInt(position[3], 10)},
-            {widget: this.$el.get(0)}
-        );
+        DocumentManager.getDocumentForPath(filepath).then(function(doc) {
+            var codeMirror;
+            doc._ensureMasterEditor();
+            codeMirror = doc._masterEditor._codeMirror;
 
+            this.marker = codeMirror.setBookmark(
+                {line: parseInt(position[2], 10) - 1, ch: parseInt(position[3], 10)},
+                {widget: this.$el.get(0)}
+            );
+        }.bind(this));
     }
 
     ProbeWidget.prototype.updateValue = function (position, tracerId) {
