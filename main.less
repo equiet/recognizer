@@ -283,13 +283,20 @@ th.rw_warnings {
 	border-bottom: 1px dotted rgba(0,0,0,0.3);
 }
 .recognizer-probe-widget {
+	display: inline-block;
 	border: 1px solid rgba(0,0,0,0.15);
-	height: 20px;
+	height: 15px;
 	border-radius: 2px;
 	margin: 0 4px;
-	padding: 0 3px;
+	padding: 0 5px;
 	pointer-events: all;
+	-webkit-transform: translateY(1px);
+	max-width: 100px;
+	overflow: hidden;
 
+	// &:hover {
+	// 	max-width: 9999px;
+	// }
 	.console-user-command-result {
 		display: inline-block;
 	}

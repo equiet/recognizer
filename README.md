@@ -31,3 +31,5 @@ Yes (kind of).
 - instrument more calls
 - shorten probes (display full on mouseover perhaps?)
 - better object inspection
+- build in a console
+- custom AST traverse library

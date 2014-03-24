@@ -30,8 +30,8 @@ define(function (require, exports, module) {
 
         // TODO: Use estraverse
         var instrumentedAst = $.extend(true, {}, ast);
-        instrumentedAst = _instrumentFunctionDeclarations(instrumentedAst);
-        instrumentedAst = _instrumentFunctionExpressions(instrumentedAst);
+        // instrumentedAst = _instrumentFunctionDeclarations(instrumentedAst);
+        // instrumentedAst = _instrumentFunctionExpressions(instrumentedAst);
 
         var probes = [];
         instrumentedAst = _instrumentProbes(instrumentedAst, probes);
@@ -233,6 +233,7 @@ define(function (require, exports, module) {
 
 
 
+    /* TODO: Use inner function to instrument to get rid of 'probes' variable */
     function _instrumentProbes(node, probes) {
 
         var nodeCopy = $.extend(true, {}, node);
@@ -248,6 +249,7 @@ define(function (require, exports, module) {
             return node;
         }
 
+        /* E.g. FunctionExpression */
         if (node.body && Array.isArray(node.body.body)) {
             node.body.body = node.body.body.map(function (item) {
                 return _instrumentProbes(item, probes);
@@ -269,6 +271,42 @@ define(function (require, exports, module) {
 
         if (node.type === 'ExpressionStatement') {
             node.expression = _instrumentProbes(node.expression, probes);
+            return node;
+        }
+
+        if (node.type === 'BinaryExpression') {
+            node.left = _instrumentProbes(node.left, probes);
+            node.right = _instrumentProbes(node.right, probes);
+            return node;
+        }
+
+        if (node.type === 'ObjectExpression') {
+            node.properties = node.properties.map(function (item) {
+                return _instrumentProbes(item, probes);
+            });
+            return node;
+        }
+
+        if (node.type === 'Property') {
+            node.value = _instrumentProbes(node.value, probes);
+            return node;
+        }
+
+        if (node.type === 'Identifier') {
+
+            probes.push({
+                code: escodegen.generate(node, {format: {compact: true}}),
+                loc: node.loc
+            });
+
+            node = _getProbeAst(
+                node.loc.start.line,
+                node.loc.start.column,
+                node.loc.end.line,
+                node.loc.end.column,
+                nodeCopy
+            );
+
             return node;
         }
 
@@ -300,9 +338,9 @@ define(function (require, exports, module) {
             });
 
             nodeCopy.arguments = nodeCopy.arguments.map(function (item) {
-                return _instrumentProbes(item, probes)
+                return _instrumentProbes(item, probes);
             });
-            // nodeCopy.callee = _instrumentProbes(nodeCopy.callee, probes);
+            nodeCopy.callee = _instrumentProbes(nodeCopy.callee, probes);
 
             node = _getProbeAst(
                 node.loc.start.line,
@@ -352,92 +390,73 @@ define(function (require, exports, module) {
 
     // function _instrumentProbes(ast, probes) {
     //     return estraverse.replace(ast, {
-    //         enter: function(node, parent) {
-
-    //             // console.log(node);
-
-    //             // Do not log our own inserted code
-    //             if (node.__instrumented) {
-    //                 return node;
-    //             }
-
-    //             if (parent.__instrumented) {
-    //                 return node;
-    //             }
-
-    //             // Do not log Identifiers TODO: only for now
-    //             if (node.type === 'Identifier') {
-    //                 return node;
-    //             }
-
-    //             // Do not log Literals
-    //             if (node.type === 'Literal') {
-    //                 return node;
-    //             }
-
-    //             // Instrument only 1-liners
-    //             if (node.loc.start.line !== node.loc.end.line) {
-    //                 return node;
-    //             }
-
-    //             if (node.type === 'MemberExpression' && node.loc) {
-
-    //                 // node.__instrument = true;
-
-    //             }
-
-    //             if (node.type === 'CallExpression' && node.loc) {
-    //                 // this.skip(); // Do not traverse inside
-
-    //                 node.__instrument = true;
-
-    //                 // probes.push({
-    //                 //     code: escodegen.generate(parent, {format: {compact: true}}),
-    //                 //     loc: node.loc
-    //                 // });
-
-    //                 // console.log('Probe:', escodegen.generate(parent, {format: {compact: true}}), 'Start:', node.loc.start, 'End:', node.loc.end);
-
-    //                 // var nodeCopy = $.extend(true, {}, node);
-    //                 // return _getProbeAst(
-    //                 //     node.loc.start.line,
-    //                 //     node.loc.start.column,
-    //                 //     node.loc.end.line,
-    //                 //     node.loc.end.column,
-    //                 //     nodeCopy
-    //                 // );
-    //             }
-
-    //             return node;
-
-    //         },
     //         leave: function(parent, node) {
+    //             var nodeCopy = $.extend(true, {}, node);
 
-    //             if (node.__instrument) {
+    //             if (node.__instrumented) {
+    //                 return;
+    //             }
+
+    //             if (!node.loc) {
+    //                 return;
+    //             }
+
+    //             // console.log('Node:', node);
+    //             // console.log('Probe:', escodegen.generate(node, {format: {compact: true}}), 'Start:', node.loc.start, 'End:', node.loc.end);
+
+    //             if (node.type === 'Identifier') {
 
     //                 probes.push({
-    //                     code: escodegen.generate(parent, {format: {compact: true}}),
+    //                     code: escodegen.generate(node, {format: {compact: true}}),
     //                     loc: node.loc
     //                 });
 
-    //                 console.log({
-    //                     code: escodegen.generate(parent, {format: {compact: true}}),
-    //                     loc: node.loc
-    //                 });
-    //                 // console.log('Probe:', escodegen.generate(parent, {format: {compact: true}}), 'Start:', node.loc.start, 'End:', node.loc.end);
-
-    //                 var nodeCopy = $.extend(true, {}, node);
-    //                 return _getProbeAst(
+    //                 node = _getProbeAst(
     //                     node.loc.start.line,
     //                     node.loc.start.column,
     //                     node.loc.end.line,
     //                     node.loc.end.column,
-    //                     // nodeCopy
-    //                     {}
+    //                     nodeCopy
     //                 );
 
+    //                 return node;
     //             }
 
+    //             if (node.type === 'MemberExpression') {
+
+    //                 probes.push({
+    //                     code: escodegen.generate(node, {format: {compact: true}}),
+    //                     loc: node.loc
+    //                 });
+
+    //                 node = _getProbeAst(
+    //                     node.loc.start.line,
+    //                     node.loc.start.column,
+    //                     node.loc.end.line,
+    //                     node.loc.end.column,
+    //                     nodeCopy
+    //                 );
+
+    //                 return node;
+    //             }
+
+    //             if (node.type === 'CallExpression') {
+
+    //                 probes.push({
+    //                     code: escodegen.generate(node, {format: {compact: true}}),
+    //                     loc: node.loc
+    //                 });
+
+    //                 node = _getProbeAst(
+    //                     node.loc.start.line,
+    //                     node.loc.start.column,
+    //                     node.loc.end.line,
+    //                     node.loc.end.column,
+    //                     nodeCopy
+    //                 );
+
+    //                 return node;
+    //             }
     //         }
     //     });
     // }
