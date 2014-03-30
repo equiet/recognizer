@@ -12,56 +12,56 @@ define(function (require, exports, module) {
 
     // From https://github.com/Constellation/estraverse/blob/master/estraverse.js
     var VisitorKeys = {
-    //     AssignmentExpression: ['left', 'right'],
-    //     ArrayExpression: ['elements'],
-    //     ArrayPattern: ['elements'],
-    //     ArrowFunctionExpression: ['params', 'defaults', 'rest', 'body'],
+        AssignmentExpression: [/*'left', */'right'],
+        ArrayExpression: ['elements'],
+        ArrayPattern: ['elements'],
+        ArrowFunctionExpression: ['params', 'defaults', 'rest', 'body'],
         BlockStatement: ['body'],
         BinaryExpression: ['left', 'right'],
-    //     BreakStatement: ['label'],
+        BreakStatement: ['label'],
         CallExpression: ['callee', 'arguments'],
-    //     CatchClause: ['param', 'body'],
-    //     ClassBody: ['body'],
-    //     ClassDeclaration: ['id', 'body', 'superClass'],
-    //     ClassExpression: ['id', 'body', 'superClass'],
-    //     ConditionalExpression: ['test', 'consequent', 'alternate'],
-    //     ContinueStatement: ['label'],
-    //     DebuggerStatement: [],
-    //     DirectiveStatement: [],
-    //     DoWhileStatement: ['body', 'test'],
-    //     EmptyStatement: [],
+        CatchClause: ['param', 'body'],
+        ClassBody: ['body'],
+        ClassDeclaration: ['id', 'body', 'superClass'],
+        ClassExpression: ['id', 'body', 'superClass'],
+        ConditionalExpression: ['test', 'consequent', 'alternate'],
+        ContinueStatement: ['label'],
+        DebuggerStatement: [],
+        DirectiveStatement: [],
+        DoWhileStatement: ['body', 'test'],
+        EmptyStatement: [],
         ExpressionStatement: ['expression'],
-    //     ForStatement: ['init', 'test', 'update', 'body'],
-    //     ForInStatement: ['left', 'right', 'body'],
-    //     ForOfStatement: ['left', 'right', 'body'],
-    //     FunctionDeclaration: ['id', 'params', 'defaults', 'rest', 'body'],
-        FunctionExpression: [/*'id', 'params', 'defaults', 'rest', */'body'],
-    //     Identifier: [],
-    //     IfStatement: ['test', 'consequent', 'alternate'],
-    //     Literal: [],
-    //     LabeledStatement: ['label', 'body'],
-    //     LogicalExpression: ['left', 'right'],
-        MemberExpression: ['object',/* 'property'*/],
-    //     MethodDefinition: ['key', 'value'],
-    //     NewExpression: ['callee', 'arguments'],
+        ForStatement: ['init', 'test', 'update', 'body'],
+        ForInStatement: ['left', 'right', 'body'],
+        ForOfStatement: ['left', 'right', 'body'],
+        FunctionDeclaration: ['id', 'params', 'defaults', 'rest', 'body'],
+        FunctionExpression: ['id', 'params', 'defaults', 'rest', 'body'],
+        // Identifier: [],
+        IfStatement: ['test', 'consequent', 'alternate'],
+        Literal: [],
+        LabeledStatement: ['label', 'body'],
+        LogicalExpression: ['left', 'right'],
+        MemberExpression: ['object', 'property'],
+        MethodDefinition: ['key', 'value'],
+        NewExpression: ['callee', 'arguments'],
         ObjectExpression: ['properties'],
-    //     ObjectPattern: ['properties'],
+        ObjectPattern: ['properties'],
         Program: ['body'],
-        Property: [/*'key', */'value'],
-    //     ReturnStatement: ['argument'],
-    //     SequenceExpression: ['expressions'],
-    //     SwitchStatement: ['discriminant', 'cases'],
-    //     SwitchCase: ['test', 'consequent'],
-    //     ThisExpression: [],
-    //     ThrowStatement: ['argument'],
-    //     TryStatement: ['block', 'handlers', 'handler', 'guardedHandlers', 'finalizer'],
-    //     UnaryExpression: ['argument'],
-    //     UpdateExpression: ['argument'],
+        Property: ['key', 'value'],
+        ReturnStatement: ['argument'],
+        SequenceExpression: ['expressions'],
+        SwitchStatement: ['discriminant', 'cases'],
+        SwitchCase: ['test', 'consequent'],
+        ThisExpression: [],
+        ThrowStatement: ['argument'],
+        TryStatement: ['block', 'handlers', 'handler', 'guardedHandlers', 'finalizer'],
+        UnaryExpression: ['argument'],
+        UpdateExpression: ['argument'],
         VariableDeclaration: ['declarations'],
-        VariableDeclarator: [/*'id', */'init'],
-    //     WhileStatement: ['test', 'body'],
-    //     WithStatement: ['object', 'body'],
-    //     YieldExpression: ['argument']
+        VariableDeclarator: ['id', 'init'],
+        WhileStatement: ['test', 'body'],
+        WithStatement: ['object', 'body'],
+        YieldExpression: ['argument']
     };
 
     function instrument(code) {
@@ -87,7 +87,7 @@ define(function (require, exports, module) {
 
 
     function _instrumentFunctionDeclarations(ast) {
-        ast = traverse(ast, {
+        ast = traverse(ast, null, {
             FunctionDeclaration: function(node) {
                 node.body.body.unshift(_getFunctionEntryAst(
                     node.id.loc.start.line,
@@ -105,7 +105,7 @@ define(function (require, exports, module) {
 
 
     function _instrumentFunctionExpressions(ast) {
-        ast = traverse(ast, {
+        ast = traverse(ast, null, {
             FunctionExpression: function(node) {
                 node.body.body.unshift(_getFunctionEntryAst(
                     node.loc.start.line,
@@ -125,8 +125,8 @@ define(function (require, exports, module) {
     function _instrumentProbes(ast) {
         var probes = [];
 
-        ast = traverse(ast, {
-            Identifier: function(node) {
+        ast = traverse(ast, null, {
+            Identifier: function (node, parent) {
                 probes.push({
                     code: escodegen.generate(node, {format: {compact: true}}),
                     loc: node.loc
@@ -140,7 +140,11 @@ define(function (require, exports, module) {
                 );
                 return node;
             },
-            MemberExpression: function(node) {
+            MemberExpression: function (node, parent) {
+                // TODO: This ignores lots of code, but prevents the issues with `this` changing to global object
+                if (parent.type === 'CallExpression') {
+                    return node;
+                }
                 probes.push({
                     code: escodegen.generate(node, {format: {compact: true}}),
                     loc: node.loc
@@ -154,7 +158,7 @@ define(function (require, exports, module) {
                 );
                 return node;
             },
-            CallExpression: function(node) {
+            CallExpression: function (node, parent) {
                 probes.push({
                     code: escodegen.generate(node, {format: {compact: true}}),
                     loc: node.loc
@@ -283,7 +287,7 @@ define(function (require, exports, module) {
     }
 
 
-    function traverse(node, visitor) {
+    function traverse(node, parent, visitor) {
 
         if (!node) {
             return node;
@@ -293,9 +297,8 @@ define(function (require, exports, module) {
             return node;
         }
 
-        // Log which nodes are not recognized yet in Instrumenter
+        // Skip not implemented instrumentations
         if (VisitorKeys[node.type] === undefined) {
-            console.log('[recognizer] Not implemented yet:', node);
             return node;
         }
 
@@ -305,17 +308,17 @@ define(function (require, exports, module) {
             // If the leave is an array, traverse all of its elements
             if (Array.isArray(node[visitKey])) {
                 node[visitKey].map(function (item) {
-                    return traverse(item, visitor);
+                    return traverse(item, node, visitor);
                 });
             } else {
-                node[visitKey] = traverse(node[visitKey], visitor);
+                node[visitKey] = traverse(node[visitKey], node, visitor);
             }
 
         });
 
         // Transform the AST with a visitor
         if (visitor[node.type]) {
-            node = visitor[node.type]($.extend(true, {}, node));
+            node = visitor[node.type]($.extend(true, {}, node), parent);
         }
 
         return node;
