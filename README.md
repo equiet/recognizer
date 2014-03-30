@@ -26,6 +26,7 @@ Yes (kind of).
 - code flow visualization
 - using tests to define safe patterns of function usage
 - code documentation
+- semantic highlighting
 
 ## TODO
 - instrument more calls
@@ -33,3 +34,5 @@ Yes (kind of).
 - better object inspection
 - build in a console
 - custom AST traverse library
+- semantic highlighting
+- code execution animation
