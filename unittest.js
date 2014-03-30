@@ -7,6 +7,8 @@ define(function (require, exports, module) {
     describe('Instrumentation', function() {
 
         it('should return inspectableObjects', function() {
+            var instrumentedCode = Instrumenter.instrument('function() {}');
+            console.log(instrumentedCode.code);
             // TODO: expect()
         });
 

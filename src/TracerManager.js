@@ -4,7 +4,8 @@ define(function (require, exports, module) {
     var FileSystem = brackets.getModule('filesystem/FileSystem'),
         ProjectManager = brackets.getModule('project/ProjectManager'),
         Instrumenter = require('src/Instrumenter'),
-        WidgetManager = require('src/WidgetManager');
+        WidgetManager = require('src/WidgetManager'),
+        TracedDocument = require('src/TracedDocument').TracedDocument;
 
     var tracedDocuments = {},
         refreshInterval;
@@ -24,7 +25,16 @@ define(function (require, exports, module) {
         var newFile = FileSystem.getFileForPath(newPath);
 
         file.read({}, function(err, data, stat) {
-            var tracedDocument = Instrumenter.instrument(file, data);
+            var tracerId = Math.floor(Math.random() * 1000 * 1000 * 1000),
+                instrumentedCode = Instrumenter.instrument(data);
+
+            var tracedDocument = new TracedDocument(
+                file,
+                tracerId,
+                instrumentedCode.code.replace(/\{\{tracerId\}\}/g, tracerId),
+                instrumentedCode.probes
+            );
+
             newFile.write(tracedDocument.code, {});
 
             tracedDocuments[file.fullPath] = tracedDocument;

@@ -4,125 +4,175 @@
 define(function (require, exports, module) {
     'use strict';
 
-    var TracedDocument = require('src/TracedDocument').TracedDocument;
-
     var esprima = require('thirdparty/esprima'),
         escodegen = require('thirdparty/escodegen'),
         estraverse = require('thirdparty/estraverse');
 
     var tracerSnippet = require('text!src/snippets/tracer.js');
 
+    // var VisitKeys = {
+    //     AssignmentExpression: ['left', 'right'],
+    //     ArrayExpression: ['elements'],
+    //     ArrayPattern: ['elements'],
+    //     ArrowFunctionExpression: ['params', 'defaults', 'rest', 'body'],
+    //     BlockStatement: ['body'],
+    //     BinaryExpression: ['left', 'right'],
+    //     BreakStatement: ['label'],
+    //     CallExpression: ['callee', 'arguments'],
+    //     CatchClause: ['param', 'body'],
+    //     ClassBody: ['body'],
+    //     ClassDeclaration: ['id', 'body', 'superClass'],
+    //     ClassExpression: ['id', 'body', 'superClass'],
+    //     ConditionalExpression: ['test', 'consequent', 'alternate'],
+    //     ContinueStatement: ['label'],
+    //     DebuggerStatement: [],
+    //     DirectiveStatement: [],
+    //     DoWhileStatement: ['body', 'test'],
+    //     EmptyStatement: [],
+    //     ExpressionStatement: ['expression'],
+    //     ForStatement: ['init', 'test', 'update', 'body'],
+    //     ForInStatement: ['left', 'right', 'body'],
+    //     ForOfStatement: ['left', 'right', 'body'],
+    //     FunctionDeclaration: ['id', 'params', 'defaults', 'rest', 'body'],
+    //     FunctionExpression: ['id', 'params', 'defaults', 'rest', 'body'],
+    //     Identifier: [],
+    //     IfStatement: ['test', 'consequent', 'alternate'],
+    //     Literal: [],
+    //     LabeledStatement: ['label', 'body'],
+    //     LogicalExpression: ['left', 'right'],
+    //     MemberExpression: ['object', 'property'],
+    //     MethodDefinition: ['key', 'value'],
+    //     NewExpression: ['callee', 'arguments'],
+    //     ObjectExpression: ['properties'],
+    //     ObjectPattern: ['properties'],
+    //     Program: ['body'],
+    //     Property: ['key', 'value'],
+    //     ReturnStatement: ['argument'],
+    //     SequenceExpression: ['expressions'],
+    //     SwitchStatement: ['discriminant', 'cases'],
+    //     SwitchCase: ['test', 'consequent'],
+    //     ThisExpression: [],
+    //     ThrowStatement: ['argument'],
+    //     TryStatement: ['block', 'handlers', 'handler', 'guardedHandlers', 'finalizer'],
+    //     UnaryExpression: ['argument'],
+    //     UpdateExpression: ['argument'],
+    //     VariableDeclaration: ['declarations'],
+    //     VariableDeclarator: ['id', 'init'],
+    //     WhileStatement: ['test', 'body'],
+    //     WithStatement: ['object', 'body'],
+    //     YieldExpression: ['argument']
+    // };
 
-    function instrument(file, code) {
+    function instrument(code) {
 
         var ast = esprima.parse(code, {
             loc: true,
             tolerant: false
         });
 
-        var inspectableObjects = [];
-        // inspectableObjects = inspectableObjects.concat(_findInspectableObjects(astCopy));
-        // inspectableObjects = inspectableObjects.concat(_findFunctionCalls(ast));
-        // inspectableObjects = inspectableObjects.filter(function(obj) { // Proble only one-liners for now
-            // return obj.loc.start.line === obj.loc.end.line;
-        // });
-        // console.log(inspectableObjects);
+        var astCopy = $.extend(true, {}, ast);
 
-        // TODO: Use estraverse
-        var instrumentedAst = $.extend(true, {}, ast);
-        // instrumentedAst = _instrumentFunctionDeclarations(instrumentedAst);
-        // instrumentedAst = _instrumentFunctionExpressions(instrumentedAst);
+        var instrumentedAst;
+        instrumentedAst = _instrumentFunctionDeclarations(astCopy);
+        instrumentedAst = _instrumentFunctionExpressions(instrumentedAst.ast);
+        instrumentedAst = _instrumentProbes(instrumentedAst.ast);
 
-        var probes = [];
-        instrumentedAst = _instrumentProbes(instrumentedAst, probes);
-
-        console.log(probes);
-
-        var tracerId = Math.floor(Math.random() * 1000 * 1000 * 1000);
-
-        return new TracedDocument(
-            file,
-            tracerId,
-            (tracerSnippet + escodegen.generate(instrumentedAst)).replace(/\{\{tracerId\}\}/g, tracerId),
-            // inspectableObjects
-            probes
-        );
+        return {
+            code: tracerSnippet + escodegen.generate(instrumentedAst.ast),
+            probes: instrumentedAst.probes
+        };
 
     }
 
 
-    function _instrumentFunctionDeclarations(node) {
-
-        if (Array.isArray(node.body)) {
-            node.body.map(_instrumentFunctionDeclarations);
-        }
-
-        if (node.body && Array.isArray(node.body.body)) {
-            node.body.body.map(_instrumentFunctionDeclarations);
-        }
-
-        if (node.type === 'FunctionDeclaration') {
-            node.body.body.unshift(_getFunctionEntryAst(
-                node.id.loc.start.line,
-                node.id.loc.start.column,
-                node.id.loc.end.line,
-                node.id.loc.end.column
-            ));
-        }
-
-        return node;
-    }
-
-
-
-    function _instrumentFunctionExpressions(node) {
-
-        if (Array.isArray(node.body)) {
-            node.body.map(_instrumentFunctionExpressions);
-        }
-
-        if (node.body && Array.isArray(node.body.body)) {
-            node.body.body.map(_instrumentFunctionExpressions);
-        }
-
-        if (node.type === 'VariableDeclaration') {
-            node.declarations.forEach(function(declaration) {
-                _instrumentFunctionExpressions(declaration.init);
-            });
-        }
-
-        if (node.type === 'VariableDeclarator') {
-            _instrumentFunctionExpressions(node.init);
-        }
-
-        if (node.type === 'ExpressionStatement') {
-            if (node.expression.type === 'CallExpression') {
-                node.expression.arguments.forEach(_instrumentFunctionExpressions);
+    function _instrumentFunctionDeclarations(ast) {
+        ast = traverse(ast, {
+            FunctionDeclaration: function(node) {
+                node.body.body.unshift(_getFunctionEntryAst(
+                    node.id.loc.start.line,
+                    node.id.loc.start.column,
+                    node.id.loc.end.line,
+                    node.id.loc.end.column
+                ));
+                return node;
             }
-        }
+        });
+        return {
+            ast: ast
+        };
+    }
 
-        if (node.type === 'FunctionExpression') {
-            node.body.body.unshift(_getFunctionEntryAst(
-                node.loc.start.line,
-                node.loc.start.column,
-                node.loc.start.line,
-                node.loc.start.column + 8
-            ));
-        }
 
-        // // Instrument probes, TODO move to separate function?
-        // if (node.type === 'CallExpression') {
-        //     console.log('call', node.loc.start.line);
-        //     node = _getProbeAst(
-        //         node.loc.start.line,
-        //         node.loc.start.column,
-        //         node.loc.start.line,
-        //         node.loc.start.column,
-        //         node
-        //     );
-        // }
+    function _instrumentFunctionExpressions(ast) {
+        ast = traverse(ast, {
+            FunctionExpression: function(node) {
+                node.body.body.unshift(_getFunctionEntryAst(
+                    node.loc.start.line,
+                    node.loc.start.column,
+                    node.loc.start.line,
+                    node.loc.start.column + 8
+                ));
+                return node;
+            }
+        });
+        return {
+            ast: ast
+        };
+    }
 
-        return node;
+
+    function _instrumentProbes(ast) {
+        var probes = [];
+
+        ast = traverse(ast, {
+            Identifier: function(node) {
+                probes.push({
+                    code: escodegen.generate(node, {format: {compact: true}}),
+                    loc: node.loc
+                });
+                node = _getProbeAst(
+                    node.loc.start.line,
+                    node.loc.start.column,
+                    node.loc.end.line,
+                    node.loc.end.column,
+                    node
+                );
+                return node;
+            },
+            MemberExpression: function(node) {
+                probes.push({
+                    code: escodegen.generate(node, {format: {compact: true}}),
+                    loc: node.loc
+                });
+                node = _getProbeAst(
+                    node.loc.start.line,
+                    node.loc.start.column,
+                    node.loc.end.line,
+                    node.loc.end.column,
+                    node
+                );
+                return node;
+            },
+            CallExpression: function(node) {
+                probes.push({
+                    code: escodegen.generate(node, {format: {compact: true}}),
+                    loc: node.loc
+                });
+                node = _getProbeAst(
+                    node.loc.start.line,
+                    node.loc.start.column,
+                    node.loc.end.line,
+                    node.loc.end.column,
+                    node
+                );
+                return node;
+            }
+        });
+
+        return {
+            ast: ast,
+            probes: probes
+        };
     }
 
 
@@ -232,125 +282,89 @@ define(function (require, exports, module) {
     }
 
 
+    function traverse(node, visitor) {
 
-    /* TODO: Use inner function to instrument to get rid of 'probes' variable */
-    function _instrumentProbes(node, probes) {
-
-        var nodeCopy = $.extend(true, {}, node);
+        if (!node) {
+            return node;
+        }
 
         if (node.__instrumented) {
             return node;
         }
 
+        // if (VisitKeys[node.type] === undefined) {
+        //     return node;
+        // }
+
+        // // Traverse all leaves using the syntax tree database
+        // VisitKeys[node.type].forEach(function (visitKey) {
+
+        //     // If the leave is array, traverse all of its elements
+        //     if (Array.isArray(node[visitKey])) {
+        //         node[visitKey].map(function (item) {
+        //             return traverse(item, visitor);
+        //         });
+        //     } else {
+        //         node[visitKey] = traverse(node[visitKey], visitor);
+        //     }
+
+        // });
+
         if (Array.isArray(node.body)) {
             node.body = node.body.map(function (item) {
-                return _instrumentProbes(item, probes);
+                return traverse(item, visitor);
             });
-            return node;
         }
 
         /* E.g. FunctionExpression */
         if (node.body && Array.isArray(node.body.body)) {
             node.body.body = node.body.body.map(function (item) {
-                return _instrumentProbes(item, probes);
+                return traverse(item, visitor);
             });
-            return node;
         }
 
         if (node.type === 'VariableDeclaration') {
             node.declarations = node.declarations.map(function(declaration) {
-                return _instrumentProbes(declaration, probes);
+                return traverse(declaration, visitor);
             });
-            return node;
         }
 
         if (node.type === 'VariableDeclarator') {
-            node.init = _instrumentProbes(node.init, probes);
-            return node;
+            node.init = traverse(node.init, visitor);
         }
 
         if (node.type === 'ExpressionStatement') {
-            node.expression = _instrumentProbes(node.expression, probes);
-            return node;
+            node.expression = traverse(node.expression, visitor);
         }
 
         if (node.type === 'BinaryExpression') {
-            node.left = _instrumentProbes(node.left, probes);
-            node.right = _instrumentProbes(node.right, probes);
-            return node;
+            node.left = traverse(node.left, visitor);
+            node.right = traverse(node.right, visitor);
         }
 
         if (node.type === 'ObjectExpression') {
             node.properties = node.properties.map(function (item) {
-                return _instrumentProbes(item, probes);
+                return traverse(item, visitor);
             });
-            return node;
         }
 
         if (node.type === 'Property') {
-            node.value = _instrumentProbes(node.value, probes);
-            return node;
-        }
-
-        if (node.type === 'Identifier') {
-
-            probes.push({
-                code: escodegen.generate(node, {format: {compact: true}}),
-                loc: node.loc
-            });
-
-            node = _getProbeAst(
-                node.loc.start.line,
-                node.loc.start.column,
-                node.loc.end.line,
-                node.loc.end.column,
-                nodeCopy
-            );
-
-            return node;
+            node.value = traverse(node.value, visitor);
         }
 
         if (node.type === 'MemberExpression') {
-
-            probes.push({
-                code: escodegen.generate(node, {format: {compact: true}}),
-                loc: node.loc
-            });
-
-            nodeCopy.object = _instrumentProbes(nodeCopy.object, probes);
-
-            node = _getProbeAst(
-                node.loc.start.line,
-                node.loc.start.column,
-                node.loc.end.line,
-                node.loc.end.column,
-                nodeCopy
-            );
-
-            return node;
+            node.object = traverse(node.object, visitor);
         }
 
         if (node.type === 'CallExpression') {
-
-            probes.push({
-                code: escodegen.generate(node, {format: {compact: true}}),
-                loc: node.loc
+            node.arguments = node.arguments.map(function (item) {
+                return traverse(item, visitor);
             });
+            node.callee = traverse(node.callee, visitor);
+        }
 
-            nodeCopy.arguments = nodeCopy.arguments.map(function (item) {
-                return _instrumentProbes(item, probes);
-            });
-            nodeCopy.callee = _instrumentProbes(nodeCopy.callee, probes);
-
-            node = _getProbeAst(
-                node.loc.start.line,
-                node.loc.start.column,
-                node.loc.end.line,
-                node.loc.end.column,
-                nodeCopy
-            );
-
-            return node;
+        if (visitor[node.type]) {
+            node = visitor[node.type]($.extend(true, {}, node));
         }
 
         return node;
@@ -358,129 +372,7 @@ define(function (require, exports, module) {
     }
 
 
-    // function _findInspectableObjects(ast) {
-    //     var objects = [];
-
-    //     function getName(node) {
-    //         if (node.name) {
-    //             return node.name;
-    //         }
-    //         if (node.type === 'MemberExpression') {
-    //             return getName(node.object) + '.' + getName(node.property);
-    //         }
-    //         if (node.type === 'CallExpression') {
-    //             var args = node.arguments.map(function (arg) { return arg.value; })
-    //             return getName(node.callee) + '(' + args.join(', ') + ')';
-    //         }
-    //     }
-
-    //     estraverse.traverse(ast, {
-    //         enter: function(node, parent) {
-    //             if (node.type === 'MemberExpression') {
-    //                 objects.push({
-    //                     name: getName(node),
-    //                     loc: node.loc
-    //                 });
-    //             }
-    //         }
-    //     });
-
-    //     return objects;
-    // }
-
-    // function _instrumentProbes(ast, probes) {
-    //     return estraverse.replace(ast, {
-    //         leave: function(parent, node) {
-    //             var nodeCopy = $.extend(true, {}, node);
-
-    //             if (node.__instrumented) {
-    //                 return;
-    //             }
-
-    //             if (!node.loc) {
-    //                 return;
-    //             }
-
-    //             // console.log('Node:', node);
-    //             // console.log('Probe:', escodegen.generate(node, {format: {compact: true}}), 'Start:', node.loc.start, 'End:', node.loc.end);
-
-    //             if (node.type === 'Identifier') {
-
-    //                 probes.push({
-    //                     code: escodegen.generate(node, {format: {compact: true}}),
-    //                     loc: node.loc
-    //                 });
-
-    //                 node = _getProbeAst(
-    //                     node.loc.start.line,
-    //                     node.loc.start.column,
-    //                     node.loc.end.line,
-    //                     node.loc.end.column,
-    //                     nodeCopy
-    //                 );
-
-    //                 return node;
-    //             }
-
-    //             if (node.type === 'MemberExpression') {
-
-    //                 probes.push({
-    //                     code: escodegen.generate(node, {format: {compact: true}}),
-    //                     loc: node.loc
-    //                 });
-
-    //                 node = _getProbeAst(
-    //                     node.loc.start.line,
-    //                     node.loc.start.column,
-    //                     node.loc.end.line,
-    //                     node.loc.end.column,
-    //                     nodeCopy
-    //                 );
-
-    //                 return node;
-    //             }
-
-    //             if (node.type === 'CallExpression') {
-
-    //                 probes.push({
-    //                     code: escodegen.generate(node, {format: {compact: true}}),
-    //                     loc: node.loc
-    //                 });
-
-    //                 node = _getProbeAst(
-    //                     node.loc.start.line,
-    //                     node.loc.start.column,
-    //                     node.loc.end.line,
-    //                     node.loc.end.column,
-    //                     nodeCopy
-    //                 );
-
-    //                 return node;
-    //             }
-    //         }
-    //     });
-    // }
-
-    function _findFunctionCalls(ast) {
-        var objects = [];
-
-        estraverse.traverse(ast, {
-            enter: function(node, parent) {
-                if (node.type === 'CallExpression') {
-                    objects.push({
-                        code: escodegen.generate(parent, {format: {compact: true}}),
-                        loc: node.loc
-                    });
-                }
-            }
-        });
-
-        return objects;
-    }
-
     exports.instrument = instrument;
-
-    // For testing
-    // exports._findInspectableObjects = _findInspectableObjects;
+    exports.traverse = traverse;
 
 });
