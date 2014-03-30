@@ -10,15 +10,16 @@ define(function (require, exports, module) {
 
     var tracerSnippet = require('text!src/snippets/tracer.js');
 
-    // var VisitKeys = {
+    // From https://github.com/Constellation/estraverse/blob/master/estraverse.js
+    var VisitorKeys = {
     //     AssignmentExpression: ['left', 'right'],
     //     ArrayExpression: ['elements'],
     //     ArrayPattern: ['elements'],
     //     ArrowFunctionExpression: ['params', 'defaults', 'rest', 'body'],
-    //     BlockStatement: ['body'],
-    //     BinaryExpression: ['left', 'right'],
+        BlockStatement: ['body'],
+        BinaryExpression: ['left', 'right'],
     //     BreakStatement: ['label'],
-    //     CallExpression: ['callee', 'arguments'],
+        CallExpression: ['callee', 'arguments'],
     //     CatchClause: ['param', 'body'],
     //     ClassBody: ['body'],
     //     ClassDeclaration: ['id', 'body', 'superClass'],
@@ -29,24 +30,24 @@ define(function (require, exports, module) {
     //     DirectiveStatement: [],
     //     DoWhileStatement: ['body', 'test'],
     //     EmptyStatement: [],
-    //     ExpressionStatement: ['expression'],
+        ExpressionStatement: ['expression'],
     //     ForStatement: ['init', 'test', 'update', 'body'],
     //     ForInStatement: ['left', 'right', 'body'],
     //     ForOfStatement: ['left', 'right', 'body'],
     //     FunctionDeclaration: ['id', 'params', 'defaults', 'rest', 'body'],
-    //     FunctionExpression: ['id', 'params', 'defaults', 'rest', 'body'],
+        FunctionExpression: [/*'id', 'params', 'defaults', 'rest', */'body'],
     //     Identifier: [],
     //     IfStatement: ['test', 'consequent', 'alternate'],
     //     Literal: [],
     //     LabeledStatement: ['label', 'body'],
     //     LogicalExpression: ['left', 'right'],
-    //     MemberExpression: ['object', 'property'],
+        MemberExpression: ['object',/* 'property'*/],
     //     MethodDefinition: ['key', 'value'],
     //     NewExpression: ['callee', 'arguments'],
-    //     ObjectExpression: ['properties'],
+        ObjectExpression: ['properties'],
     //     ObjectPattern: ['properties'],
-    //     Program: ['body'],
-    //     Property: ['key', 'value'],
+        Program: ['body'],
+        Property: [/*'key', */'value'],
     //     ReturnStatement: ['argument'],
     //     SequenceExpression: ['expressions'],
     //     SwitchStatement: ['discriminant', 'cases'],
@@ -56,12 +57,12 @@ define(function (require, exports, module) {
     //     TryStatement: ['block', 'handlers', 'handler', 'guardedHandlers', 'finalizer'],
     //     UnaryExpression: ['argument'],
     //     UpdateExpression: ['argument'],
-    //     VariableDeclaration: ['declarations'],
-    //     VariableDeclarator: ['id', 'init'],
+        VariableDeclaration: ['declarations'],
+        VariableDeclarator: [/*'id', */'init'],
     //     WhileStatement: ['test', 'body'],
     //     WithStatement: ['object', 'body'],
     //     YieldExpression: ['argument']
-    // };
+    };
 
     function instrument(code) {
 
@@ -292,77 +293,27 @@ define(function (require, exports, module) {
             return node;
         }
 
-        // if (VisitKeys[node.type] === undefined) {
-        //     return node;
-        // }
-
-        // // Traverse all leaves using the syntax tree database
-        // VisitKeys[node.type].forEach(function (visitKey) {
-
-        //     // If the leave is array, traverse all of its elements
-        //     if (Array.isArray(node[visitKey])) {
-        //         node[visitKey].map(function (item) {
-        //             return traverse(item, visitor);
-        //         });
-        //     } else {
-        //         node[visitKey] = traverse(node[visitKey], visitor);
-        //     }
-
-        // });
-
-        if (Array.isArray(node.body)) {
-            node.body = node.body.map(function (item) {
-                return traverse(item, visitor);
-            });
+        // Log which nodes are not recognized yet in Instrumenter
+        if (VisitorKeys[node.type] === undefined) {
+            console.log('[recognizer] Not implemented yet:', node);
+            return node;
         }
 
-        /* E.g. FunctionExpression */
-        if (node.body && Array.isArray(node.body.body)) {
-            node.body.body = node.body.body.map(function (item) {
-                return traverse(item, visitor);
-            });
-        }
+        // Traverse all leaves using the syntax tree database
+        VisitorKeys[node.type].forEach(function (visitKey) {
 
-        if (node.type === 'VariableDeclaration') {
-            node.declarations = node.declarations.map(function(declaration) {
-                return traverse(declaration, visitor);
-            });
-        }
+            // If the leave is an array, traverse all of its elements
+            if (Array.isArray(node[visitKey])) {
+                node[visitKey].map(function (item) {
+                    return traverse(item, visitor);
+                });
+            } else {
+                node[visitKey] = traverse(node[visitKey], visitor);
+            }
 
-        if (node.type === 'VariableDeclarator') {
-            node.init = traverse(node.init, visitor);
-        }
+        });
 
-        if (node.type === 'ExpressionStatement') {
-            node.expression = traverse(node.expression, visitor);
-        }
-
-        if (node.type === 'BinaryExpression') {
-            node.left = traverse(node.left, visitor);
-            node.right = traverse(node.right, visitor);
-        }
-
-        if (node.type === 'ObjectExpression') {
-            node.properties = node.properties.map(function (item) {
-                return traverse(item, visitor);
-            });
-        }
-
-        if (node.type === 'Property') {
-            node.value = traverse(node.value, visitor);
-        }
-
-        if (node.type === 'MemberExpression') {
-            node.object = traverse(node.object, visitor);
-        }
-
-        if (node.type === 'CallExpression') {
-            node.arguments = node.arguments.map(function (item) {
-                return traverse(item, visitor);
-            });
-            node.callee = traverse(node.callee, visitor);
-        }
-
+        // Transform the AST with a visitor
         if (visitor[node.type]) {
             node = visitor[node.type]($.extend(true, {}, node));
         }
