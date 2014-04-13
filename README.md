@@ -11,10 +11,14 @@ Yes (kind of).
 1. Open some `.html` file with associated `.js` file in Brackets.
 2. `.recognizer.js` file will be created. Use this file as `<script>` source.
 3. Open Live Preview.
-4. All function declarations (only these for now) will be instrumented.
+4. You should now see which functions were called and the values of some variables.
 
 ## Sketches
 
+Real-time semantic highlighting
+![Semantic highlighting](https://raw.github.com/equiet/recognizer/master/sketch_semantic_highlighting.png)
+
+Function and variable inspection
 ![Design](https://raw.github.com/equiet/recognizer/master/recognizer.png)
 <!-- ![Design](https://raw.github.com/equiet/recognizer/master/recognizer_concept.png) -->
 
@@ -29,10 +33,10 @@ Yes (kind of).
 - semantic highlighting
 
 ## TODO
-- instrument more calls
 - shorten probes (display full on mouseover perhaps?)
 - better object inspection
-- build in a console
-- custom AST traverse library
+- built-in console
 - semantic highlighting
 - code execution animation
+- execution timeline
+- do not hide probed values after agent is disconnected
