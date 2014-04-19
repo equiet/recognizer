@@ -3,7 +3,6 @@ define(function (require, exports, module) {
 
     var EditorManager = brackets.getModule('editor/EditorManager'),
         KeyEvent = brackets.getModule('utils/KeyEvent'),
-        Async = brackets.getModule('utils/Async'),
         Inspector = brackets.getModule('LiveDevelopment/Inspector/Inspector'),
         DocumentManager = brackets.getModule('document/DocumentManager');
 
@@ -15,7 +14,6 @@ define(function (require, exports, module) {
         this.hostEditor = DocumentManager.getOpenDocumentForPath(filepath)._masterEditor;
         this.widget = null;
         this.position = position;
-        this._toggleQueue = new Async.PromiseQueue();
 
         this.htmlContent = window.document.createElement("div");
         this.$htmlContent = $(this.htmlContent).addClass("inline-widget recognizer-widget");
@@ -78,6 +76,7 @@ define(function (require, exports, module) {
         // if (this.$table.find('tr').length > 5) {
         //     this.$table.addClass('has-many-rows');
         // }
+        //
 
         if (this.widget) {
             this.widget.setHeight(this.$table.height());
@@ -89,14 +88,14 @@ define(function (require, exports, module) {
     LogWidget.prototype.toggle = function(show) {
         if (show) {
             this.widget = new InlineWidget(this.hostEditor, this.position[2], this.htmlContent, this.$htmlContent);
-            return this.hostEditor.addInlineWidget(
+            this.hostEditor.addInlineWidget(
                 {line: this.position[2] - 1, ch: 0},
                 this.widget
-
             );
+            this.widget.setHeight(this.$table.height());
         } else {
             this.widget.close();
-            return this.hostEditor.removeInlineWidget(this.widget);
+            this.hostEditor.removeInlineWidget(this.widget);
         }
     };
 
