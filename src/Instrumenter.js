@@ -144,14 +144,14 @@ define(function (require, exports, module) {
                     code: escodegen.generate(node, {format: {compact: true}}),
                     loc: node.loc
                 });
-                node = _getProbeAst(
+
+                return _getProbeAst(
                     node.loc.start.line,
                     node.loc.start.column,
                     node.loc.end.line,
                     node.loc.end.column,
-                    node
+                    _.cloneDeep(node)
                 );
-                return node;
             },
 
             // `node` is instrumented. Therefore asking for children of this node is meaningless,
@@ -202,19 +202,19 @@ define(function (require, exports, module) {
 
             MemberExpression: function (node, parent) {
                 console.log('MemberExpression before:', escodegen.generate(node, {format: {compact: true}}));
+
                 probes.push({
                     code: escodegen.generate(node, {format: {compact: true}}),
                     loc: node.loc
                 });
-                node = _getProbeAst(
+
+                return _getProbeAst(
                     node.loc.start.line,
                     node.loc.start.column,
                     node.loc.end.line,
                     node.loc.end.column,
-                    node
+                    _.cloneDeep(node)
                 );
-                console.log('Expression before:', escodegen.generate(node, {format: {compact: true}}));
-                return node;
             }
         });
 
@@ -282,6 +282,7 @@ define(function (require, exports, module) {
     }
 
     function _getProbeAst(startLine, startColumn, endLine, endColumn, node) {
+        console.log('getProbeAst', arguments);
         return {
             "__original": node,
             "__instrumented": true,
@@ -560,9 +561,9 @@ define(function (require, exports, module) {
             newNode = visitor[newNode.type](newNode, parent, node);
         }
 
-        console.log('Leaving node', node.type, escodegen.generate(node, {format: {compact: true}}));
+        console.log('Leaving node', node.type, escodegen.generate(newNode, {format: {compact: true}}));
 
-        return node;
+        return newNode;
 
     }
 
