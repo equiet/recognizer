@@ -13,7 +13,7 @@ define(function (require, exports, module) {
 
     // From https://github.com/Constellation/estraverse/blob/master/estraverse.js
     var VisitorKeys = {
-        AssignmentExpression: [/*'left', */'right'],
+        AssignmentExpression: [/*'left',*/ 'right'],
         ArrayExpression: ['elements'],
         ArrayPattern: ['elements'],
         ArrowFunctionExpression: ['params', 'defaults', 'rest', 'body'],
@@ -33,10 +33,10 @@ define(function (require, exports, module) {
         EmptyStatement: [],
         ExpressionStatement: ['expression'],
         ForStatement: ['init', 'test', 'update', 'body'],
-        ForInStatement: ['left', 'right', 'body'],
-        ForOfStatement: ['left', 'right', 'body'],
-        FunctionDeclaration: ['id', 'params', 'defaults', 'rest', 'body'],
-        FunctionExpression: ['id', 'params', 'defaults', 'rest', 'body'],
+        ForInStatement: [/*'left',*/ 'right', 'body'],
+        ForOfStatement: [/*'left',*/ 'right', 'body'],
+        FunctionDeclaration: [/*'id', 'params',*/ 'defaults', 'rest', 'body'],
+        FunctionExpression: [/*'id', 'params',*/ 'defaults', 'rest', 'body'],
         Identifier: [],
         IfStatement: ['test', 'consequent', 'alternate'],
         Literal: [],
@@ -164,7 +164,6 @@ define(function (require, exports, module) {
 
                 // obj.fn('arg')
                 if (originalNode.callee.type === 'MemberExpression') {
-                    console.log('Path 1 input:', node, escodegen.generate(node, {format: {compact: true}}));
                     return _getFunctionProbeAst2(
                         node.loc.start.line,
                         node.loc.start.column,
@@ -178,7 +177,6 @@ define(function (require, exports, module) {
 
                 // fn('arg')
                 if (originalNode.callee.type === 'Identifier') {
-                    console.log('Path 2 input:', node, escodegen.generate(node, {format: {compact: true}}));
                     return _getProbeAst(
                         node.loc.start.line,
                         node.loc.start.column,
@@ -189,8 +187,8 @@ define(function (require, exports, module) {
                 }
 
                 // ?
-                console.log('path 3');
-                // console.warn('Unknown CallExpression', node);
+                console.warn('Unknown CallExpression', node, escodegen.generate(node, {format: {compact: true}}));
+                return _.cloneDeep(node);
                 return _getProbeAst(
                     node.loc.start.line,
                     node.loc.start.column,
@@ -282,7 +280,6 @@ define(function (require, exports, module) {
     }
 
     function _getProbeAst(startLine, startColumn, endLine, endColumn, node) {
-        console.log('getProbeAst', arguments);
         return {
             "__original": node,
             "__instrumented": true,
@@ -531,8 +528,8 @@ define(function (require, exports, module) {
             return node;
         }
 
+        // Do not instrument code which we have inserted in previous pass (usually when inserting logEntry() functions)
         if (node.__instrumented) {
-            console.warn('Instrumented node, skipping');
             return node;
         }
 
@@ -561,7 +558,7 @@ define(function (require, exports, module) {
             newNode = visitor[newNode.type](newNode, parent, node);
         }
 
-        console.log('Leaving node', node.type, escodegen.generate(newNode, {format: {compact: true}}));
+        // console.log('Leaving node', node.type, escodegen.generate(newNode, {format: {compact: true}}));
 
         return newNode;
 
