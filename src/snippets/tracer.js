@@ -3,12 +3,20 @@
  * https://github.com/equiet/recognizer
  */
 
+// TODO: remove
+function __probe(val) {
+    return val;
+}
+
 var __recognizer{{tracerId}} = (function () {
     'use strict';
+
+    var global = this;
 
     function Tracer() {
         this._calls = [];
         this._args = [];
+        this.global = global;
 
         this._probeValues = {};
     }
@@ -23,27 +31,45 @@ var __recognizer{{tracerId}} = (function () {
             });
             this._args.push(Array.prototype.slice.call(args));
         },
+
         getCalls: function (since) {
             var calls = this._calls.filter(function(call) {
                 return (since) ? call.time > since : true;
             });
             return stringify(calls);
         },
+
         getCallCount: function () {
             return this._calls.length;
         },
+
         logProbe: function (location, result) {
             this._probeValues[location.toString()] = result;
             return result;
         },
+
+        /**
+         * Log function call.
+         * @param  {Object}   location  Start and end of the intrumented function
+         * @param  {Object}   obj       `this` context for the function, evaluated first
+         * @param  {Array}    args      Function arguments, evaluated second
+         * @param  {Function} fn        Function itself, evaluated last
+         */
+        // This won't work, because we can't get fn without executing obj again
+        logProbeFn: function (location, obj, args, fn) {
+            var result = fn.apply(obj, args);
+            this._probeValues[location.toString()] = result;
+            return result;
+        },
+
         getProbeValues: function () {
             return stringify(Object.keys(this._probeValues));
         },
+
         test: function () {
-            if (console) {
-                console.log('[recognizer tracer] test function run successfully');
-            }
+            console.log('[recognizer tracer] test function run successfully');
         },
+
         connect: function () {
             return this;
         }

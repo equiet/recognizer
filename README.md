@@ -23,7 +23,6 @@ Function and variable inspection
 <!-- ![Design](https://raw.github.com/equiet/recognizer/master/recognizer_concept.png) -->
 
 ## Scope
-
 - automatic debugging, code inspection
 - live editing
 - inline tests
@@ -33,10 +32,7 @@ Function and variable inspection
 - semantic highlighting
 
 ## TODO
-- shorten probes (display full on mouseover perhaps?)
 - better object inspection
-- built-in console
 - semantic highlighting
 - code execution animation
 - execution timeline
-- do not hide probed values after agent is disconnected

@@ -6,7 +6,8 @@ define(function (require, exports, module) {
 
     var esprima = require('thirdparty/esprima'),
         escodegen = require('thirdparty/escodegen'),
-        estraverse = require('thirdparty/estraverse');
+        estraverse = require('thirdparty/estraverse'),
+        _ = brackets.getModule("thirdparty/lodash");
 
     var tracerSnippet = require('text!src/snippets/tracer.js');
 
@@ -36,7 +37,7 @@ define(function (require, exports, module) {
         ForOfStatement: ['left', 'right', 'body'],
         FunctionDeclaration: ['id', 'params', 'defaults', 'rest', 'body'],
         FunctionExpression: ['id', 'params', 'defaults', 'rest', 'body'],
-        // Identifier: [],
+        Identifier: [],
         IfStatement: ['test', 'consequent', 'alternate'],
         Literal: [],
         LabeledStatement: ['label', 'body'],
@@ -77,6 +78,8 @@ define(function (require, exports, module) {
         instrumentedAst = _instrumentFunctionDeclarations(astCopy);
         instrumentedAst = _instrumentFunctionExpressions(instrumentedAst.ast);
         instrumentedAst = _instrumentProbes(instrumentedAst.ast);
+
+        console.log('AST', instrumentedAst.ast);
 
         return {
             code: tracerSnippet + escodegen.generate(instrumentedAst.ast),
@@ -127,24 +130,16 @@ define(function (require, exports, module) {
 
         ast = traverse(ast, null, {
             Identifier: function (node, parent) {
-                probes.push({
-                    code: escodegen.generate(node, {format: {compact: true}}),
-                    loc: node.loc
-                });
-                node = _getProbeAst(
-                    node.loc.start.line,
-                    node.loc.start.column,
-                    node.loc.end.line,
-                    node.loc.end.column,
-                    node
-                );
-                return node;
-            },
-            MemberExpression: function (node, parent) {
-                // TODO: This ignores lots of code, but prevents the issues with `this` changing to global object
-                if (parent.type === 'CallExpression') {
+                // Do not instrument if parent is one of these
+                if (['VariableDeclarator', 'Property', 'FunctionDeclaration'].indexOf(parent.type) !== -1) {
                     return node;
                 }
+
+                // In `Math.random`, we want to instrument `Math` (object) and `Math.random` (object.property), not `random` (property)
+                if (parent.type === 'MemberExpression' && _.isEqual(parent.property, node)) {
+                    return node;
+                }
+
                 probes.push({
                     code: escodegen.generate(node, {format: {compact: true}}),
                     loc: node.loc
@@ -158,7 +153,55 @@ define(function (require, exports, module) {
                 );
                 return node;
             },
-            CallExpression: function (node, parent) {
+
+            // `node` is instrumented. Therefore asking for children of this node is meaningless,
+            // since it has been overwritten. `originalNode` is its uninstrumented version.
+            CallExpression: function (node, parent, originalNode) {
+                probes.push({
+                    code: escodegen.generate(originalNode, {format: {compact: true}}),
+                    loc: node.loc
+                });
+
+                // obj.fn('arg')
+                if (originalNode.callee.type === 'MemberExpression') {
+                    console.log('Path 1 input:', node, escodegen.generate(node, {format: {compact: true}}));
+                    return _getFunctionProbeAst2(
+                        node.loc.start.line,
+                        node.loc.start.column,
+                        node.loc.end.line,
+                        node.loc.end.column,
+                        node.callee.__original.object,
+                        node.callee.__original.property,
+                        node.arguments
+                    );
+                }
+
+                // fn('arg')
+                if (originalNode.callee.type === 'Identifier') {
+                    console.log('Path 2 input:', node, escodegen.generate(node, {format: {compact: true}}));
+                    return _getProbeAst(
+                        node.loc.start.line,
+                        node.loc.start.column,
+                        node.loc.end.line,
+                        node.loc.end.column,
+                        node
+                    );
+                }
+
+                // ?
+                console.log('path 3');
+                // console.warn('Unknown CallExpression', node);
+                return _getProbeAst(
+                    node.loc.start.line,
+                    node.loc.start.column,
+                    node.loc.end.line,
+                    node.loc.end.column,
+                    node
+                );
+            },
+
+            MemberExpression: function (node, parent) {
+                console.log('MemberExpression before:', escodegen.generate(node, {format: {compact: true}}));
                 probes.push({
                     code: escodegen.generate(node, {format: {compact: true}}),
                     loc: node.loc
@@ -170,6 +213,7 @@ define(function (require, exports, module) {
                     node.loc.end.column,
                     node
                 );
+                console.log('Expression before:', escodegen.generate(node, {format: {compact: true}}));
                 return node;
             }
         });
@@ -239,6 +283,7 @@ define(function (require, exports, module) {
 
     function _getProbeAst(startLine, startColumn, endLine, endColumn, node) {
         return {
+            "__original": node,
             "__instrumented": true,
             "type": "CallExpression",
             "callee": {
@@ -286,6 +331,198 @@ define(function (require, exports, module) {
         };
     }
 
+    // function _getFunctionProbeAst(startLine, startColumn, endLine, endColumn, node) {
+    //     // if (node.callee.type === 'Identifier') {
+    //     //     node.callee = {
+    //     //         object: {
+    //     //             "__instrumented": true,
+    //     //             "type": "MemberExpression",
+    //     //             "computed": false,
+    //     //             "object": {
+    //     //                 "type": "Identifier",
+    //     //                 "name": "__recognizer{{tracerId}}"
+    //     //             },
+    //     //             "property": {
+    //     //                 "type": "Identifier",
+    //     //                 "name": "global"
+    //     //             }
+    //     //         },
+    //     //         property: node.callee
+    //     //     };
+    //     // }
+    //     return {
+    //         "__instrumented": true,
+    //         "type": "CallExpression",
+    //         "callee": {
+    //             "__instrumented": true,
+    //             "type": "MemberExpression",
+    //             "computed": false,
+    //             "object": {
+    //                 "type": "Identifier",
+    //                 "name": "__recognizer{{tracerId}}"
+    //             },
+    //             "property": {
+    //                 "type": "Identifier",
+    //                 "name": "logProbeFn"
+    //             }
+    //         },
+    //         "arguments": [
+    //             {
+    //                 "__instrumented": true,
+    //                 "type": "ArrayExpression",
+    //                 "elements": [
+    //                     {
+    //                         "type": "Literal",
+    //                         "value": startLine,
+    //                         "raw": "" + startLine
+    //                     },
+    //                     {
+    //                         "type": "Literal",
+    //                         "value": startColumn,
+    //                         "raw": "" + startColumn
+    //                     },
+    //                     {
+    //                         "type": "Literal",
+    //                         "value": endLine,
+    //                         "raw": "" + endLine
+    //                     },
+    //                     {
+    //                         "type": "Literal",
+    //                         "value": endColumn,
+    //                         "raw": "" + endColumn
+    //                     }
+    //                 ]
+    //             },
+    //             node.callee.callee.object,
+    //             {
+    //                 "__instrumented": true,
+    //                 "type": "ArrayExpression",
+    //                 "elements": node.arguments
+    //             },
+    //             node.callee
+    //         ]
+    //     };
+    // }
+
+    // (function() {
+    //     var obj = foo('bar'),
+    //         fn = obj.html;
+    //     return fn.apply(obj, arguments);
+    // }.bind(this))
+    function _getFunctionProbeAst2(startLine, startColumn, endLine, endColumn, nodeObject, nodeProperty, nodeArguments) {
+        return {
+            "__instrumented": true,
+            "type": "CallExpression",
+            "callee": {
+                "__instrumented": true,
+                "type": "CallExpression",
+                "callee": {
+                    "__instrumented": true,
+                    "type": "MemberExpression",
+                    "computed": false,
+                    "object": {
+                        "__instrumented": true,
+                        "type": "FunctionExpression",
+                        "id": null,
+                        "params": [],
+                        "defaults": [],
+                        "body": {
+                            "__instrumented": true,
+                            "type": "BlockStatement",
+                            "body": [
+                                {
+                                    "__instrumented": true,
+                                    "type": "VariableDeclaration",
+                                    "declarations": [
+                                        {
+                                            "__instrumented": true,
+                                            "type": "VariableDeclarator",
+                                            "id": {
+                                                "type": "Identifier",
+                                                "name": "obj"
+                                            },
+                                            "init": nodeObject
+                                        },
+                                        {
+                                            "__instrumented": true,
+                                            "type": "VariableDeclarator",
+                                            "id": {
+                                                "__instrumented": true,
+                                                "type": "Identifier",
+                                                "name": "fn"
+                                            },
+                                            "init": {
+                                                "__instrumented": true,
+                                                "type": "MemberExpression",
+                                                "computed": false,
+                                                "object": {
+                                                    "type": "Identifier",
+                                                    "name": "obj"
+                                                },
+                                                // TODO: this is not instrumented
+                                                "property": nodeProperty
+                                            },
+                                        },
+                                    ],
+                                    "kind": "var"
+                                },
+                                {
+                                    "__instrumented": true,
+                                    "type": "ReturnStatement",
+                                    "argument": {
+                                        "__instrumented": true,
+                                        "type": "CallExpression",
+                                        "callee": {
+                                            "__instrumented": true,
+                                            "type": "MemberExpression",
+                                            "computed": false,
+                                            "object": {
+                                                "__instrumented": true,
+                                                "type": "Identifier",
+                                                "name": "fn"
+                                            },
+                                            "property": {
+                                                "__instrumented": true,
+                                                "type": "Identifier",
+                                                "name": "apply"
+                                            }
+                                        },
+                                        "arguments": [
+                                            {
+                                                "__instrumented": true,
+                                                "type": "Identifier",
+                                                "name": "obj"
+                                            },
+                                            {
+                                                "__instrumented": true,
+                                                "type": "Identifier",
+                                                "name": "arguments"
+                                            }
+                                        ]
+                                    }
+                                }
+                            ]
+                        },
+                        "rest": null,
+                        "generator": false,
+                        "expression": false
+                    },
+                    "property": {
+                        "type": "Identifier",
+                        "name": "bind"
+                    }
+                },
+                "arguments": [
+                    {
+                        "__instrumented": true,
+                        "type": "ThisExpression"
+                    }
+                ]
+            },
+            "arguments": nodeArguments
+        };
+    }
+
 
     function traverse(node, parent, visitor) {
 
@@ -294,6 +531,7 @@ define(function (require, exports, module) {
         }
 
         if (node.__instrumented) {
+            console.warn('Instrumented node, skipping');
             return node;
         }
 
@@ -303,23 +541,26 @@ define(function (require, exports, module) {
         }
 
         // Traverse all leaves using the syntax tree database
+        var newNode = _.cloneDeep(node);
         VisitorKeys[node.type].forEach(function (visitKey) {
 
             // If the leave is an array, traverse all of its elements
             if (Array.isArray(node[visitKey])) {
-                node[visitKey].map(function (item) {
+                newNode[visitKey] = newNode[visitKey].map(function (item) {
                     return traverse(item, node, visitor);
                 });
             } else {
-                node[visitKey] = traverse(node[visitKey], node, visitor);
+                newNode[visitKey] = traverse(node[visitKey], node, visitor);
             }
 
         });
 
         // Transform the AST with a visitor
-        if (visitor[node.type]) {
-            node = visitor[node.type]($.extend(true, {}, node), parent);
+        if (visitor[newNode.type]) {
+            newNode = visitor[newNode.type](newNode, parent, node);
         }
+
+        console.log('Leaving node', node.type, escodegen.generate(node, {format: {compact: true}}));
 
         return node;
 
