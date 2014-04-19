@@ -3,11 +3,6 @@
  * https://github.com/equiet/recognizer
  */
 
-// TODO: remove
-function __probe(val) {
-    return val;
-}
-
 var __recognizer{{tracerId}} = (function () {
     'use strict';
 
