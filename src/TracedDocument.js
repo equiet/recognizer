@@ -7,7 +7,8 @@ define(function (require, exports, module) {
     var Inspector = brackets.getModule('LiveDevelopment/Inspector/Inspector'),
         EditorManager = brackets.getModule('editor/EditorManager'),
         WebInspector = require('thirdparty/WebInspector'),
-        DocumentManager = brackets.getModule('document/DocumentManager');
+        DocumentManager = brackets.getModule('document/DocumentManager'),
+        ExtensionUtils = brackets.getModule('utils/ExtensionUtils');
 
     function TracedDocument(file, tracerId, code, instrumentableObjects) {
         this.file = file;
@@ -17,6 +18,7 @@ define(function (require, exports, module) {
         this._state = 'disconnected';
         DocumentManager.getDocumentForPath(file.fullPath).then(function(doc) {
             this.hostEditor = doc._masterEditor;
+            this.hostEditor._codeMirror.setOption('theme', 'default recognizer');
         }.bind(this));
         this.markers = {};
         this._probesCache = {};
@@ -103,7 +105,7 @@ define(function (require, exports, module) {
                     {line: location[0] - 1, ch: location[1]},
                     {line: location[2] - 1, ch: location[3]},
                     {
-                        className: 'recognizer-probe is-' + result._type + ' is-probe' + probeId
+                        className: 'recognizer-probe is-' + result._type + ' is-probe' + probeId.replace(/,/, '-')
                     }
                 );
 

@@ -143,7 +143,8 @@ define(function (require, exports, module) {
 
                 probes.push({
                     code: escodegen.generate(node, {format: {compact: true}}),
-                    loc: node.loc
+                    loc: node.loc,
+                    highlight: node.loc
                 });
 
                 return _getProbeAst(
@@ -160,12 +161,13 @@ define(function (require, exports, module) {
             CallExpression: function (node, parent, originalNode) {
                 probes.push({
                     code: escodegen.generate(originalNode, {format: {compact: true}}),
-                    loc: node.loc
+                    loc: node.loc,
+                    highlight: node.loc
                 });
 
                 // obj.fn('arg')
                 if (originalNode.callee.type === 'MemberExpression') {
-                    return _getFunctionProbeAst2(
+                    return _getFunctionProbeAst(
                         node.loc.start.line,
                         node.loc.start.column,
                         node.loc.end.line,
@@ -190,21 +192,20 @@ define(function (require, exports, module) {
                 // ?
                 console.warn('Unknown CallExpression', node, escodegen.generate(node, {format: {compact: true}}));
                 return _.cloneDeep(node);
-                return _getProbeAst(
-                    node.loc.start.line,
-                    node.loc.start.column,
-                    node.loc.end.line,
-                    node.loc.end.column,
-                    node
-                );
+//                return _getProbeAst(
+//                    node.loc.start.line,
+//                    node.loc.start.column,
+//                    node.loc.end.line,
+//                    node.loc.end.column,
+//                    node
+//                );
             },
 
             MemberExpression: function (node, parent) {
-                console.log('MemberExpression before:', escodegen.generate(node, {format: {compact: true}}));
-
                 probes.push({
                     code: escodegen.generate(node, {format: {compact: true}}),
-                    loc: node.loc
+                    loc: node.loc,
+                    highlight: node.loc
                 });
 
                 return _getProbeAst(
@@ -330,85 +331,12 @@ define(function (require, exports, module) {
         };
     }
 
-    // function _getFunctionProbeAst(startLine, startColumn, endLine, endColumn, node) {
-    //     // if (node.callee.type === 'Identifier') {
-    //     //     node.callee = {
-    //     //         object: {
-    //     //             "__instrumented": true,
-    //     //             "type": "MemberExpression",
-    //     //             "computed": false,
-    //     //             "object": {
-    //     //                 "type": "Identifier",
-    //     //                 "name": "__recognizer{{tracerId}}"
-    //     //             },
-    //     //             "property": {
-    //     //                 "type": "Identifier",
-    //     //                 "name": "global"
-    //     //             }
-    //     //         },
-    //     //         property: node.callee
-    //     //     };
-    //     // }
-    //     return {
-    //         "__instrumented": true,
-    //         "type": "CallExpression",
-    //         "callee": {
-    //             "__instrumented": true,
-    //             "type": "MemberExpression",
-    //             "computed": false,
-    //             "object": {
-    //                 "type": "Identifier",
-    //                 "name": "__recognizer{{tracerId}}"
-    //             },
-    //             "property": {
-    //                 "type": "Identifier",
-    //                 "name": "logProbeFn"
-    //             }
-    //         },
-    //         "arguments": [
-    //             {
-    //                 "__instrumented": true,
-    //                 "type": "ArrayExpression",
-    //                 "elements": [
-    //                     {
-    //                         "type": "Literal",
-    //                         "value": startLine,
-    //                         "raw": "" + startLine
-    //                     },
-    //                     {
-    //                         "type": "Literal",
-    //                         "value": startColumn,
-    //                         "raw": "" + startColumn
-    //                     },
-    //                     {
-    //                         "type": "Literal",
-    //                         "value": endLine,
-    //                         "raw": "" + endLine
-    //                     },
-    //                     {
-    //                         "type": "Literal",
-    //                         "value": endColumn,
-    //                         "raw": "" + endColumn
-    //                     }
-    //                 ]
-    //             },
-    //             node.callee.callee.object,
-    //             {
-    //                 "__instrumented": true,
-    //                 "type": "ArrayExpression",
-    //                 "elements": node.arguments
-    //             },
-    //             node.callee
-    //         ]
-    //     };
-    // }
-
     // (function() {
     //     var obj = foo('bar'),
     //         fn = obj.html;
     //     return fn.apply(obj, arguments);
     // }.bind(this))
-    function _getFunctionProbeAst2(startLine, startColumn, endLine, endColumn, nodeObject, nodeProperty, nodeArguments) {
+    function _getFunctionProbeAst(startLine, startColumn, endLine, endColumn, nodeObject, nodeProperty, nodeArguments) {
         return {
             "__instrumented": true,
             "type": "CallExpression",

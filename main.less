@@ -2,6 +2,18 @@
 @recognizerRed: rgb(249,29,43);
 @recognizerYellow: rgb(254,199,0);
 
+@varObject: #44BD87;
+@varFunction: #8757AD;
+@varNumber: #446FBD;
+@varString: #57C0D8;
+@varUndefined: #EA1717;
+@varNan: #EA1784;
+@varNull: #FB9E0F;
+@varProperty: #7EAD25;
+
+
+
+
 #status-indicator-recognizer {
 	&:before {
 		content: "";
@@ -283,27 +295,39 @@ th.rw_warnings {
 	border-bottom: 1px solid rgba(0,0,0,0.3);
 	color: #9B9B9B !important;
 
+    &.is-number {
+        color: @varNumber !important;
+    }
 	&.is-object {
-		color: #44BD87 !important;
+		color: @varObject !important;
 	}
 	&.is-function {
-		color: #8757AD !important;
-	}
-	&.is-number {
-		color: #446FBD !important;
+		color: @varFunction !important;
 	}
 	&.is-string {
-		color: #57C0D8 !important;
+		color: @varString !important;
 	}
 	&.is-undefined {
-		color: #EA1717 !important;
+		color: @varUndefined !important;
 	}
 	&.is-nan {
-		color: #EA1784 !important;
+		color: @varNan !important;
 	}
 	&.is-null {
-		color: #FB9E0F !important;
+		color: @varNull !important;
 	}
+}
+
+.cm-s-recognizer {
+  span.cm-number {
+    color: @varNumber;
+  }
+  span.cm-string {
+    color: @varString;
+  }
+//  span.cm-property {
+//    color: @varProperty;
+//  }
 }
 
 .recognizer-probe-widget {
@@ -335,3 +359,89 @@ th.rw_warnings {
 	min-height: 15px;
 	height: 15px;
 }
+
+
+
+
+
+//
+//.cm-s-default {
+//  span.cm-keyword {
+//    color: @accent-keyword;
+//  }
+//  span.cm-atom {
+//    color: @accent-atom;
+//  }
+//  span.cm-number {
+//    color: @varNumber;
+//  }
+//  span.cm-def {
+//    color: @accent-def;
+//  }
+//  span.cm-variable {
+//    color: @accent-variable;
+//  }
+//  span.cm-variable-2 {
+//    color: @accent-variable-2;
+//  }
+//  span.cm-variable-3 {
+//    color: @accent-variable-3;
+//  }
+//  span.cm-property {
+//    color: @accent-property;
+//  }
+//  span.cm-operator {
+//    color: @accent-operator;
+//  }
+//  span.cm-comment {
+//    color: @accent-comment;
+//  }
+//  span.cm-string {
+//    color: @varString;
+//  }
+//  span.cm-string-2 {
+//    color: @accent-string-2;
+//  }
+//  span.cm-meta {
+//    color: @accent-meta;
+//  }
+//  span.cm-error {
+//    color: @accent-error;
+//  }
+//  span.cm-qualifier {
+//    color: @accent-qualifier;
+//  }
+//  span.cm-builtin {
+//    color: @accent-builtin;
+//  }
+//  span.cm-bracket {
+//    color: @accent-bracket;
+//  }
+//  span.cm-tag {
+//    color: @accent-tag;
+//  }
+//  span.cm-attribute {
+//    color: @accent-attribute;
+//  }
+//  span.cm-header {
+//    color: @accent-header;
+//  }
+//  span.cm-quote {
+//    color: @accent-quote;
+//  }
+//  span.cm-hr {
+//    color: @accent-hr;
+//  }
+//  span.cm-link {
+//    color: @accent-link;
+//  }
+//  span.cm-rangeinfo {
+//    color: @accent-rangeinfo;
+//  }
+//  span.cm-minus {
+//    color: @accent-minus;
+//  }
+//  span.cm-plus {
+//    color: @accent-plus;
+//  }
+//}
