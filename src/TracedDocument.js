@@ -19,6 +19,7 @@ define(function (require, exports, module) {
             this.hostEditor = doc._masterEditor;
         }.bind(this));
         this.markers = {};
+        this._probesCache = {};
     }
 
     TracedDocument.prototype.isReady = function() {
@@ -87,6 +88,12 @@ define(function (require, exports, module) {
 
                 // var message = new WebInspector.ConsoleCommandResult(result, !!res.wasThrown, '', WebInspector.Linkifier, undefined, undefined, undefined);
                 // this.$el.html(message.toMessageElement());
+
+                if (this._probesCache[probeId] === result._type) {
+                    return;
+                } else {
+                    this._probesCache[probeId] = result._type;
+                }
 
                 if (this.markers[probeId]) {
                     this.markers[probeId].clear();
