@@ -280,8 +280,32 @@ th.rw_warnings {
 
 .recognizer-probe {
 	// background: #55ee22;
-	border-bottom: 1px dotted rgba(0,0,0,0.3);
+	border-bottom: 1px solid rgba(0,0,0,0.3);
+	color: #9B9B9B !important;
+
+	&.is-object {
+		color: #44BD87 !important;
+	}
+	&.is-function {
+		color: #8757AD !important;
+	}
+	&.is-number {
+		color: #446FBD !important;
+	}
+	&.is-string {
+		color: #57C0D8 !important;
+	}
+	&.is-undefined {
+		color: #EA1717 !important;
+	}
+	&.is-nan {
+		color: #EA1784 !important;
+	}
+	&.is-null {
+		color: #FB9E0F !important;
+	}
 }
+
 .recognizer-probe-widget {
 	display: inline-block;
 	border: 1px solid rgba(0,0,0,0.15);

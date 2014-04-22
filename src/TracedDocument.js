@@ -6,6 +6,7 @@ define(function (require, exports, module) {
 
     var Inspector = brackets.getModule('LiveDevelopment/Inspector/Inspector'),
         EditorManager = brackets.getModule('editor/EditorManager'),
+        WebInspector = require('thirdparty/WebInspector'),
         DocumentManager = brackets.getModule('document/DocumentManager');
 
     function TracedDocument(file, tracerId, code, instrumentableObjects) {
@@ -17,9 +18,7 @@ define(function (require, exports, module) {
         DocumentManager.getDocumentForPath(file.fullPath).then(function(doc) {
             this.hostEditor = doc._masterEditor;
         }.bind(this));
-
-
-        // this.insertProbes();
+        this.markers = {};
     }
 
     TracedDocument.prototype.isReady = function() {
@@ -67,25 +66,46 @@ define(function (require, exports, module) {
                 return;
             }
 
+            this.insertProbes(false, JSON.parse(res.result.value), this.tracerId);
+
             callback(false, JSON.parse(res.result.value), this.tracerId);
 
         }.bind(this));
 
     };
 
-    TracedDocument.prototype.insertProbes = function() {
-        this.instrumentableObjects.forEach(function(obj, index) {
-            var marker = this.hostEditor._codeMirror.markText(
-                {line: obj.loc.start.line - 1, ch: obj.loc.start.column},
-                {line: obj.loc.end.line - 1, ch: obj.loc.end.column},
-                {
-                    className: 'recognizer-probe ' + 'is-probe-' + index,
+    TracedDocument.prototype.insertProbes = function(err, probes) {
+        probes.forEach(function(probeId, index) {
+
+            var location = probeId.split(',').map(function(val, index) {
+                return parseInt(val, 10);
+            });
+
+            Inspector.Runtime.evaluate('__recognizer' + this.tracerId + '._probeValues["' + probeId + '"]', 'console', false, false, undefined, undefined, undefined, true /* generate preview */, function (res) {
+                var result = WebInspector.RemoteObject.fromPayload(res.result);
+                // console.log(result);
+
+                // var message = new WebInspector.ConsoleCommandResult(result, !!res.wasThrown, '', WebInspector.Linkifier, undefined, undefined, undefined);
+                // this.$el.html(message.toMessageElement());
+
+                if (this.markers[probeId]) {
+                    this.markers[probeId].clear();
                 }
-            );
+
+                this.markers[probeId] = this.hostEditor._codeMirror.markText(
+                    {line: location[0] - 1, ch: location[1]},
+                    {line: location[2] - 1, ch: location[3]},
+                    {
+                        className: 'recognizer-probe is-' + result._type + ' is-probe' + probeId
+                    }
+                );
+
+            }.bind(this));
+
         }.bind(this));
-        $('body').delegate('.recognizer-probe-widget', 'mouseover', function(e) {
-            console.log(e);
-        });
+        // $('body').delegate('.recognizer-probe-widget', 'mouseover', function(e) {
+        //     console.log(e);
+        // });
     };
 
     exports.TracedDocument = TracedDocument;

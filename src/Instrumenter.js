@@ -80,6 +80,7 @@ define(function (require, exports, module) {
         instrumentedAst = _instrumentProbes(instrumentedAst.ast);
 
         console.log('AST', instrumentedAst.ast);
+        console.log('Probes', instrumentedAst.probes);
 
         return {
             code: tracerSnippet + escodegen.generate(instrumentedAst.ast),
