@@ -7,6 +7,8 @@ define(function (require, exports, module) {
         DocumentManager = brackets.getModule('document/DocumentManager');
 
     function ProbeWidget(filepath, position) {
+        this._lastResult = undefined;
+
         this.$el = $('<span />').addClass('recognizer-probe-widget');
         position = position.split(',');
 
@@ -27,7 +29,15 @@ define(function (require, exports, module) {
         Inspector.Runtime.evaluate('__recognizer' + tracerId + '._probeValues["' + position + '"]', 'console', false, false, undefined, undefined, undefined, true /* generate preview */, function (res) {
             var result = WebInspector.RemoteObject.fromPayload(res.result);
             var message = new WebInspector.ConsoleCommandResult(result, !!res.wasThrown, '', WebInspector.Linkifier, undefined, undefined, undefined);
-            this.$el.html(message.toMessageElement());
+            var messageElement = message.toMessageElement();
+
+            // Primitive caching
+            if (messageElement.innerHTML === this._lastResult) {
+                return;
+            }
+            this._lastResult = messageElement.innerHTML;
+
+            this.$el.html(messageElement);
         }.bind(this));
 
     };
