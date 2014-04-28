@@ -16,12 +16,13 @@ define(function (require, exports, module) {
         this.code = code;
         this.instrumentableObjects = instrumentableObjects;
         this._state = 'disconnected';
+        this.markers = {};
+        this._probesCache = {};
         DocumentManager.getDocumentForPath(file.fullPath).then(function(doc) {
+            // TODO: unedited document does not have an editor
             this.hostEditor = doc._masterEditor;
             this.hostEditor._codeMirror.setOption('theme', 'default recognizer');
         }.bind(this));
-        this.markers = {};
-        this._probesCache = {};
     }
 
     TracedDocument.prototype.isReady = function() {
@@ -105,7 +106,7 @@ define(function (require, exports, module) {
                     {line: location[0] - 1, ch: location[1]},
                     {line: location[2] - 1, ch: location[3]},
                     {
-                        className: 'recognizer-probe is-' + result._type + ' is-probe' + probeId.replace(/,/, '-')
+                        className: 'recognizer-probe is-' + result._type + ' is-probe-' + probeId.replace(/,/g, '-')
                     }
                 );
 

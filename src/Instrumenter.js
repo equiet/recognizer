@@ -150,7 +150,22 @@ define(function (require, exports, module) {
                 probes.push({
                     type: 'Identifier',
                     code: escodegen.generate(node, {format: {compact: true}}),
-                    originalLoc: node.loc,
+                    loc: node.loc
+                });
+
+                return _getProbeAst(
+                    node.loc.start.line,
+                    node.loc.start.column,
+                    node.loc.end.line,
+                    node.loc.end.column,
+                    _.cloneDeep(node)
+                );
+            },
+
+            ThisExpression: function(node, parent) {
+                probes.push({
+                    type: 'ThisExpression',
+                    code: escodegen.generate(node, {format: {compact: true}}),
                     loc: node.loc
                 });
 
@@ -169,7 +184,6 @@ define(function (require, exports, module) {
                 probes.push({
                     type: 'CallExpression',
                     code: escodegen.generate(originalNode, {format: {compact: true}}),
-                    originalLoc: node.loc,
                     loc: node.loc
                 });
 
@@ -193,7 +207,7 @@ define(function (require, exports, module) {
                         node.loc.start.column,
                         node.loc.end.line,
                         node.loc.end.column,
-                        node
+                        _.cloneDeep(node)
                     );
                 }
 
@@ -213,15 +227,15 @@ define(function (require, exports, module) {
                 probes.push({
                     type: 'MemberExpression',
                     code: escodegen.generate(node, {format: {compact: true}}),
-                    originalLoc: node.loc,
-                    loc: node.property.loc
+                    loc: node.property.loc // This is a quick hack for highlighting only the `property` part, but it
+                                           // should be unique anyway
                 });
 
                 return _getProbeAst(
-                    node.loc.start.line,
-                    node.loc.start.column,
-                    node.loc.end.line,
-                    node.loc.end.column,
+                    node.property.loc.start.line,
+                    node.property.loc.start.column,
+                    node.property.loc.end.line,
+                    node.property.loc.end.column,
                     _.cloneDeep(node)
                 );
             }
@@ -292,7 +306,7 @@ define(function (require, exports, module) {
 
     function _getProbeAst(startLine, startColumn, endLine, endColumn, node) {
         return {
-            "__original": node,
+            "__original": _.cloneDeep(node),
             "__instrumented": true,
             "type": "CallExpression",
             "callee": {
@@ -387,18 +401,24 @@ define(function (require, exports, module) {
                                                 "type": "Identifier",
                                                 "name": "fn"
                                             },
-                                            "init": {
-                                                "__instrumented": true,
-                                                "type": "MemberExpression",
-                                                "computed": false,
-                                                "object": {
-                                                    "type": "Identifier",
-                                                    "name": "obj"
-                                                },
-                                                // TODO: this is not instrumented
-                                                "property": nodeProperty
-                                            },
+                                            "init": _getProbeAst(
+                                                nodeProperty.loc.start.line,
+                                                nodeProperty.loc.start.column,
+                                                nodeProperty.loc.end.line,
+                                                nodeProperty.loc.end.column,
+                                                {
+                                                    "__instrumented": true,
+                                                    "type": "MemberExpression",
+                                                    "computed": false,
+                                                    "object": {
+                                                        "type": "Identifier",
+                                                        "name": "obj"
+                                                    },
+                                                    "property": nodeProperty
+                                                }
+                                            )
                                         },
+
                                     ],
                                     "kind": "var"
                                 },
