@@ -84,13 +84,15 @@ define(function (require, exports, module) {
                         WidgetManager.getWidget(tracedDocument.file.fullPath, logItem.position).addEntry(logItem, tracedDocument.tracerId);
                     });
                 });
+
+                // Create probe widgets
                 tracedDocument.getProbeValues(function(err, probes) {
                     if (err) {
                         console.log('[recognizer] Error retrieving probe values', err);
                         return;
                     }
-                    probes.forEach(function(position) {
-                        WidgetManager.getProbeWidget(tracedDocument.file.fullPath, position).updateValue(position, tracedDocument.tracerId);
+                    probes.forEach(function(probe) {
+                        WidgetManager.getProbeWidget(tracedDocument.file.fullPath, probe.id).updateValue(probe.id, tracedDocument.tracerId);
                     });
                 });
             });

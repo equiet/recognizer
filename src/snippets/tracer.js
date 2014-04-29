@@ -43,22 +43,31 @@ var __recognizer{{tracerId}} = (function () {
             return result;
         },
 
-        /**
-         * Log function call.
-         * @param  {Object}   location  Start and end of the intrumented function
-         * @param  {Object}   obj       `this` context for the function, evaluated first
-         * @param  {Array}    args      Function arguments, evaluated second
-         * @param  {Function} fn        Function itself, evaluated last
-         */
-        // This won't work, because we can't get fn without executing obj again
-        logProbeFn: function (location, obj, args, fn) {
-            var result = fn.apply(obj, args);
-            this._probeValues[location.toString()] = result;
-            return result;
+        getProbeValues: function () {
+            var self = this;
+
+            var probeIds = Object.keys(this._probeValues);
+            var output = probeIds.map(function(probeId) {
+               return {
+                   id: probeId,
+                   type: self.getType(self._probeValues[probeId])
+               };
+            });
+
+            return stringify(output);
         },
 
-        getProbeValues: function () {
-            return stringify(Object.keys(this._probeValues));
+        getType: function (value) {
+            var type = typeof value;
+
+            if (type === 'number' && isNan(value)) {
+                type = 'NaN';
+            }
+            if (type === null) {
+                type = 'null';
+            }
+
+            return type;
         },
 
         test: function () {

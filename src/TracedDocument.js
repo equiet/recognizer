@@ -17,9 +17,9 @@ define(function (require, exports, module) {
         this.instrumentableObjects = instrumentableObjects;
         this._state = 'disconnected';
         this.markers = {};
-        this._probesCache = {};
+        this._cache = {};
         DocumentManager.getDocumentForPath(file.fullPath).then(function(doc) {
-            // TODO: unedited document does not have an editor
+            doc._ensureMasterEditor();
             this.hostEditor = doc._masterEditor;
             this.hostEditor._codeMirror.setOption('theme', 'default recognizer');
         }.bind(this));
@@ -79,38 +79,33 @@ define(function (require, exports, module) {
     };
 
     TracedDocument.prototype.insertProbes = function(err, probes) {
-        probes.forEach(function(probeId, index) {
+        probes.forEach(function(probe, index) {
+            // probe = {id, type}
 
-            var location = probeId.split(',').map(function(val, index) {
+            var location = probe.id.split(',').map(function(val, index) {
                 return parseInt(val, 10);
             });
 
-            Inspector.Runtime.evaluate('__recognizer' + this.tracerId + '._probeValues["' + probeId + '"]', 'console', false, false, undefined, undefined, undefined, true /* generate preview */, function (res) {
-                var result = WebInspector.RemoteObject.fromPayload(res.result);
-                // console.log(result);
+            // Cache probe
+            if (this._cache[probe.id] && this._cache[probe.id].type === probe.type) {
+                return;
+            } else {
+                this._cache[probe.id] = probe;
+            }
 
-                // var message = new WebInspector.ConsoleCommandResult(result, !!res.wasThrown, '', WebInspector.Linkifier, undefined, undefined, undefined);
-                // this.$el.html(message.toMessageElement());
+            // Clear previous marker
+            if (this.markers[probe.id]) {
+                this.markers[probe.id].clear();
+            }
 
-                if (this._probesCache[probeId] === result._type) {
-                    return;
-                } else {
-                    this._probesCache[probeId] = result._type;
+            // Create new marker
+            this.markers[probe.id] = this.hostEditor._codeMirror.markText(
+                {line: location[0] - 1, ch: location[1]},
+                {line: location[2] - 1, ch: location[3]},
+                {
+                    className: 'recognizer-probe is-' + probe.type + ' is-probe-' + location.join('-')
                 }
-
-                if (this.markers[probeId]) {
-                    this.markers[probeId].clear();
-                }
-
-                this.markers[probeId] = this.hostEditor._codeMirror.markText(
-                    {line: location[0] - 1, ch: location[1]},
-                    {line: location[2] - 1, ch: location[3]},
-                    {
-                        className: 'recognizer-probe is-' + result._type + ' is-probe-' + probeId.replace(/,/g, '-')
-                    }
-                );
-
-            }.bind(this));
+            );
 
         }.bind(this));
         // $('body').delegate('.recognizer-probe-widget', 'mouseover', function(e) {

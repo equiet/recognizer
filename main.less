@@ -292,9 +292,15 @@ th.rw_warnings {
 
 .recognizer-probe {
 	// background: #55ee22;
-	border-bottom: 1px solid rgba(0,0,0,0.3);
+	border: 1px dashed transparent;
+	border-bottom: 1px dashed rgba(0,0,0,0.2);
+	pointer-events: all;
 	color: #9B9B9B !important;
+	transition: border 0.3s;
 
+	&:hover {
+		border: 1px dashed rgba(0,0,0,0.3);
+	}
     &.is-number {
         color: @varNumber !important;
     }
@@ -319,15 +325,15 @@ th.rw_warnings {
 }
 
 .cm-s-recognizer {
+  span.cm-property {
+    color: @varProperty;
+  }
   span.cm-number {
     color: @varNumber;
   }
   span.cm-string {
     color: @varString;
   }
-//  span.cm-property {
-//    color: @varProperty;
-//  }
 }
 
 .recognizer-probe-widget {
