@@ -60,7 +60,7 @@ var __recognizer{{tracerId}} = (function () {
         getType: function (value) {
             var type = typeof value;
 
-            if (type === 'number' && isNan(value)) {
+            if (type === 'number' && isNaN(value)) {
                 type = 'NaN';
             }
             if (type === null) {

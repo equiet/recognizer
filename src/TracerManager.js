@@ -77,7 +77,7 @@ define(function (require, exports, module) {
                 }
                 tracedDocument.getLog(timestamp, function(err, log) {
                     if (err) {
-                        console.log('[recognizer] Error retrieving log', err);
+                        console.error('[recognizer] Error retrieving log', err, log);
                         return;
                     }
                     log.forEach(function(logItem) {
@@ -88,7 +88,7 @@ define(function (require, exports, module) {
                 // Create probe widgets
                 tracedDocument.getProbeValues(function(err, probes) {
                     if (err) {
-                        console.log('[recognizer] Error retrieving probe values', err);
+                        console.error('[recognizer] Error retrieving probe values', err, probes);
                         return;
                     }
                     probes.forEach(function(probe) {

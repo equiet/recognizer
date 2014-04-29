@@ -23,6 +23,7 @@ define(function (require, exports, module) {
             this.hostEditor = doc._masterEditor;
             this.hostEditor._codeMirror.setOption('theme', 'default recognizer');
         }.bind(this));
+        this.$tooltips = {};
     }
 
     TracedDocument.prototype.isReady = function() {
@@ -86,12 +87,13 @@ define(function (require, exports, module) {
                 return parseInt(val, 10);
             });
 
-            // Cache probe
+            // Do not continue if cache is not invalidated
             if (this._cache[probe.id] && this._cache[probe.id].type === probe.type) {
                 return;
-            } else {
-                this._cache[probe.id] = probe;
             }
+
+            // Store current value into cache
+            this._cache[probe.id] = probe;
 
             // Clear previous marker
             if (this.markers[probe.id]) {
@@ -108,9 +110,56 @@ define(function (require, exports, module) {
             );
 
         }.bind(this));
-        // $('body').delegate('.recognizer-probe-widget', 'mouseover', function(e) {
-        //     console.log(e);
-        // });
+
+        // Handle mouseover on probes (add tooltip)
+        $('.content').on('mouseenter', '.recognizer-probe', function(e) {
+            // Extract id from the class name
+            var probeId = $(e.currentTarget).attr('class').match(/is-probe-([0-9\-]+)/)[1].split('-').join(',');
+
+            console.log('enter', probeId);
+
+            if (this.$tooltips[probeId]) {
+                return;
+            } else {
+                this.$tooltips[probeId] = $('<div />')
+                    .addClass('recognizer-probe-tooltip')
+                    .appendTo('.main-view');
+            }
+
+            Inspector.Runtime.evaluate('__recognizer' + this.tracerId + '._probeValues["' + probeId + '"]', 'console', false, false, undefined, undefined, undefined, true /* generate preview */, function (res) {
+                var result = WebInspector.RemoteObject.fromPayload(res.result);
+                var message = new WebInspector.ConsoleCommandResult(result, !!res.wasThrown, '', WebInspector.Linkifier, undefined, undefined, undefined);
+                var messageElement = message.toMessageElement();
+
+                // Compute tooltip position
+                var clientRect = $(e.currentTarget)[0].getBoundingClientRect();
+
+                console.log(this.$tooltips[probeId]);
+
+                this.$tooltips[probeId]
+                    .css({
+                        width: 400,
+                        height: 200,
+                        top: clientRect.top + clientRect.height,
+                        left: clientRect.left + clientRect.width/2 - 400/2
+                    })
+                    .html(messageElement);
+
+            }.bind(this));
+
+        }.bind(this));
+
+        // Handle mouseout on probes (remove tooltip)
+        $('.content').on('mouseleave', '.recognizer-probe', function(e) {
+            // Extract id from the class name
+            var probeId = $(e.currentTarget).attr('class').match(/is-probe-([0-9\-]+)/)[1].split('-').join(',');
+
+            if (this.$tooltips[probeId]) {
+                this.$tooltips[probeId].remove()
+            }
+            this.$tooltips[probeId] = null;
+        });
+
     };
 
     exports.TracedDocument = TracedDocument;
