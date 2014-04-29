@@ -99,7 +99,7 @@ define(function (require, exports, module) {
 
             timestamp = Date.now();
 
-        }, 100);
+        }, 200);
     }
 
     function _stopListening() {

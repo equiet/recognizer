@@ -8,7 +8,8 @@ define(function (require, exports, module) {
         EditorManager = brackets.getModule('editor/EditorManager'),
         WebInspector = require('thirdparty/WebInspector'),
         DocumentManager = brackets.getModule('document/DocumentManager'),
-        ExtensionUtils = brackets.getModule('utils/ExtensionUtils');
+        ExtensionUtils = brackets.getModule('utils/ExtensionUtils'),
+        HoverState = require('src/utils/HoverState').HoverState;
 
     function TracedDocument(file, tracerId, code, instrumentableObjects) {
         this.file = file;
@@ -24,6 +25,9 @@ define(function (require, exports, module) {
             this.hostEditor._codeMirror.setOption('theme', 'default recognizer');
         }.bind(this));
         this.$tooltips = {};
+        this.hoverState = new HoverState(['probe', 'tooltip']);
+
+
     }
 
     TracedDocument.prototype.isReady = function() {
@@ -112,53 +116,103 @@ define(function (require, exports, module) {
         }.bind(this));
 
         // Handle mouseover on probes (add tooltip)
-        $('.content').on('mouseenter', '.recognizer-probe', function(e) {
+        $(this.hostEditor._codeMirror.display.wrapper).on('mouseenter', '.recognizer-probe', function(e) {
             // Extract id from the class name
             var probeId = $(e.currentTarget).attr('class').match(/is-probe-([0-9\-]+)/)[1].split('-').join(',');
 
-            console.log('enter', probeId);
+            // Save hover state for probe
+            this.hoverState.set(probeId, 'probe', true);
 
+            this.showTooltip(probeId, $(e.currentTarget));
+        }.bind(this));
+
+        $(this.hostEditor._codeMirror.display.wrapper).on('mouseleave', '.recognizer-probe', function(e) {
+            // Extract id from the class name
+            var probeId = $(e.currentTarget).attr('class').match(/is-probe-([0-9\-]+)/)[1].split('-').join(',');
+
+            // Save hover state for probe
+            this.hoverState.set(probeId, 'probe', false);
+
+            setTimeout(function() {
+                this.hideTooltip(probeId);
+            }.bind(this), 500);
+        }.bind(this));
+
+        $('.main-view').on('mouseenter', '.recognizer-probe-tooltip', function(e) {
+            var probeId = $(e.currentTarget).data('probe');
+
+            console.log('mouseenter');
+
+            // Save hover state for probe
+            this.hoverState.set(probeId, 'tooltip', true);
+        }.bind(this));
+
+        $('.main-view').on('mouseleave', '.recognizer-probe-tooltip', function(e) {
+            var probeId = $(e.currentTarget).data('probe');
+
+            console.log('mouseout');
+
+            // Save hover state for probe
+            this.hoverState.set(probeId, 'tooltip', false);
+
+            setTimeout(function() {
+                this.hideTooltip(probeId);
+            }.bind(this), 500);
+        }.bind(this));
+
+        TracedDocument.prototype.showTooltip = function(probeId, $trigger) {
+            // Do nothing if tooltip already exists
             if (this.$tooltips[probeId]) {
                 return;
-            } else {
-                this.$tooltips[probeId] = $('<div />')
-                    .addClass('recognizer-probe-tooltip')
-                    .appendTo('.main-view');
             }
 
+            // Compute tooltip position
+            var clientRect = $trigger[0].getBoundingClientRect();
+
+            // Create tooltip
+            this.$tooltips[probeId] = $('<div />')
+                .addClass('recognizer-probe-tooltip')
+                .css({
+                    width: 400,
+                    height: 150,
+                    top: clientRect.top + clientRect.height,
+                    left: clientRect.left + clientRect.width/2 - 400/2
+                })
+                .appendTo($('.main-view'))
+                .data('probe', probeId)
+                .html('Loading...')
+                .on('mouseenter', function() {
+                    $(this).data('keepOpen', true);
+                })
+                .on('mouseleave', function() {
+                    $(this).data('keepOpen', false);
+                });
+
+            // Get value of the probe
             Inspector.Runtime.evaluate('__recognizer' + this.tracerId + '._probeValues["' + probeId + '"]', 'console', false, false, undefined, undefined, undefined, true /* generate preview */, function (res) {
                 var result = WebInspector.RemoteObject.fromPayload(res.result);
                 var message = new WebInspector.ConsoleCommandResult(result, !!res.wasThrown, '', WebInspector.Linkifier, undefined, undefined, undefined);
                 var messageElement = message.toMessageElement();
 
-                // Compute tooltip position
-                var clientRect = $(e.currentTarget)[0].getBoundingClientRect();
-
-                console.log(this.$tooltips[probeId]);
-
-                this.$tooltips[probeId]
-                    .css({
-                        width: 400,
-                        height: 200,
-                        top: clientRect.top + clientRect.height,
-                        left: clientRect.left + clientRect.width/2 - 400/2
-                    })
-                    .html(messageElement);
-
+                if (this.$tooltips[probeId]) {
+                    this.$tooltips[probeId].html(messageElement);
+                }
             }.bind(this));
-
-        }.bind(this));
+        };
 
         // Handle mouseout on probes (remove tooltip)
-        $('.content').on('mouseleave', '.recognizer-probe', function(e) {
-            // Extract id from the class name
-            var probeId = $(e.currentTarget).attr('class').match(/is-probe-([0-9\-]+)/)[1].split('-').join(',');
+        TracedDocument.prototype.hideTooltip = function(probeId) {
+            // Do nothing if tooltip is still hovered
+            if (this.hoverState.isHovered(probeId)) {
+                return;
+            }
 
+            // Remove the tooltip
             if (this.$tooltips[probeId]) {
                 this.$tooltips[probeId].remove()
+                this.$tooltips[probeId] = null;
             }
-            this.$tooltips[probeId] = null;
-        });
+        };
 
     };
 
