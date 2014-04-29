@@ -11,23 +11,22 @@ define(function (require, exports, module) {
         ExtensionUtils = brackets.getModule('utils/ExtensionUtils'),
         HoverState = require('src/utils/HoverState').HoverState;
 
-    function TracedDocument(file, tracerId, code, instrumentableObjects) {
+    function TracedDocument(file, tracerId, code) {
         this.file = file;
         this.tracerId = tracerId;
         this.code = code;
-        this.instrumentableObjects = instrumentableObjects;
-        this._state = 'disconnected';
+
         this.markers = {};
+        this._state = 'disconnected';
         this._cache = {};
+        this.$tooltips = {};
+        this.hoverState = new HoverState(['probe', 'tooltip']);
+
         DocumentManager.getDocumentForPath(file.fullPath).then(function(doc) {
             doc._ensureMasterEditor();
             this.hostEditor = doc._masterEditor;
             this.hostEditor._codeMirror.setOption('theme', 'default recognizer');
         }.bind(this));
-        this.$tooltips = {};
-        this.hoverState = new HoverState(['probe', 'tooltip']);
-
-
     }
 
     TracedDocument.prototype.isReady = function() {
@@ -66,9 +65,9 @@ define(function (require, exports, module) {
 
     };
 
-    TracedDocument.prototype.getProbeValues = function(callback) {
+    TracedDocument.prototype.updateProbeValues = function(callback) {
 
-        Inspector.Runtime.evaluate('__recognizer' + this.tracerId + '.getProbeValues()', function (res) {
+        Inspector.Runtime.evaluate('__recognizer' + this.tracerId + '.updateProbeValues()', function (res) {
 
             if (res.wasThrown) {
                 callback(true, res.result);
@@ -76,6 +75,11 @@ define(function (require, exports, module) {
             }
 
             this.insertProbes(false, JSON.parse(res.result.value), this.tracerId);
+
+            // TODO: Figure out what to do with probe widgets
+            // probes.forEach(function(probe) {
+            //     WidgetManager.getProbeWidget(tracedDocument.file.fullPath, probe.id).updateValue(probe.id, tracedDocument.tracerId);
+            // });
 
             callback(false, JSON.parse(res.result.value), this.tracerId);
 
@@ -160,14 +164,14 @@ define(function (require, exports, module) {
             }.bind(this), 500);
         }.bind(this));
 
-        TracedDocument.prototype.showTooltip = function(probeId, $trigger) {
+        TracedDocument.prototype.showTooltip = function(probeId, $anchorElement) {
             // Do nothing if tooltip already exists
             if (this.$tooltips[probeId]) {
                 return;
             }
 
             // Compute tooltip position
-            var clientRect = $trigger[0].getBoundingClientRect();
+            var clientRect = $anchorElement[0].getBoundingClientRect();
 
             // Create tooltip
             this.$tooltips[probeId] = $('<div />')
@@ -193,10 +197,14 @@ define(function (require, exports, module) {
                 var result = WebInspector.RemoteObject.fromPayload(res.result);
                 var message = new WebInspector.ConsoleCommandResult(result, !!res.wasThrown, '', WebInspector.Linkifier, undefined, undefined, undefined);
                 var messageElement = message.toMessageElement();
+                console.log(result, message, messageElement);
+
+                $(messageElement).find('.section .header').trigger('click').hide();
 
                 if (this.$tooltips[probeId]) {
                     this.$tooltips[probeId].html(messageElement);
                 }
+
             }.bind(this));
         };
 

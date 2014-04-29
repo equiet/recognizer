@@ -43,7 +43,7 @@ var __recognizer{{tracerId}} = (function () {
             return result;
         },
 
-        getProbeValues: function () {
+        updateProbeValues: function () {
             var self = this;
 
             var probeIds = Object.keys(this._probeValues);

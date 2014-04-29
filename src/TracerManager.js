@@ -86,14 +86,11 @@ define(function (require, exports, module) {
                 });
 
                 // Create probe widgets
-                tracedDocument.getProbeValues(function(err, probes) {
+                tracedDocument.updateProbeValues(function(err, probes) {
                     if (err) {
                         console.error('[recognizer] Error retrieving probe values', err, probes);
                         return;
                     }
-                    probes.forEach(function(probe) {
-                        WidgetManager.getProbeWidget(tracedDocument.file.fullPath, probe.id).updateValue(probe.id, tracedDocument.tracerId);
-                    });
                 });
             });
 
