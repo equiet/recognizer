@@ -6,6 +6,7 @@
 @varFunction: #8757AD;
 @varNumber: #446FBD;
 @varString: #57C0D8;
+@varBoolean: #DDCF56;
 @varUndefined: #EA1717;
 @varNan: #EA1784;
 @varNull: #FB9E0F;
@@ -313,6 +314,9 @@ th.rw_warnings {
 	&.is-string {
 		color: @varString !important;
 	}
+	&.is-boolean {
+		color: @varBoolean !important;
+	}
 	&.is-undefined {
 		color: @varUndefined !important;
 	}
@@ -325,15 +329,18 @@ th.rw_warnings {
 }
 
 .cm-s-recognizer {
-  span.cm-property {
-    color: @varProperty;
-  }
-  span.cm-number {
-    color: @varNumber;
-  }
-  span.cm-string {
-    color: @varString;
-  }
+ 	span.cm-property {
+		color: @varProperty;
+	}
+	span.cm-number {
+		color: @varNumber;
+	}
+	span.cm-atom {
+		color: @varProperty;
+	}
+	span.cm-string {
+		color: @varString;
+	}
 }
 
 .recognizer-probe-widget {
