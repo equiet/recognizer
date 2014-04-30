@@ -8042,12 +8042,12 @@ WebInspector.RemoteObject.prototype = {
 
     highlightAsDOMNode: function()
     {
-        WebInspector.domAgent.highlightDOMNode(undefined, undefined, this._objectId);
+        // WebInspector.domAgent.highlightDOMNode(undefined, undefined, this._objectId);
     },
 
     hideDOMNodeHighlight: function()
     {
-        WebInspector.domAgent.hideDOMNodeHighlight();
+        // WebInspector.domAgent.hideDOMNodeHighlight();
     },
 
     /**
