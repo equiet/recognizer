@@ -10,15 +10,16 @@ define(function (require, exports, module) {
         DocumentManager = brackets.getModule('document/DocumentManager'),
         EditorManager   = brackets.getModule('editor/EditorManager'),
         ProjectManager  = brackets.getModule('project/ProjectManager'),
+//        LiveDevServerManager = brackets.getModule('LiveDevelopment/LiveDevServerManager'),
         UI = require('src/UI'),
         WidgetManager = require('src/WidgetManager'),
         TracerManager = require('src/TracerManager'),
-        WebInspector = require('thirdparty/WebInspector');
+        WebInspector = require('thirdparty/WebInspector'),
+        RecognizerServer = require('src/RecognizerServer').RecognizerServer;
 
     ExtensionUtils.loadStyleSheet(module, 'main.less');
     ExtensionUtils.loadStyleSheet(module, 'src/styles/font-awesome.css');
     ExtensionUtils.loadStyleSheet(module, 'thirdparty/styles/inspector.css');
-
 
     // Update statusbar
     $(LiveDevelopment).on('statusChange', function(e, status) {
@@ -46,6 +47,9 @@ define(function (require, exports, module) {
 
     AppInit.appReady(function() {
         // UI.panel()
+
+//        LiveDevServerManager.registerServer({ create: function() { return new RecognizerServer(); } }, 50);
+
     });
 
 
