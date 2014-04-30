@@ -10,7 +10,8 @@
 @varUndefined: #EA1717;
 @varNan: #EA1784;
 @varNull: #FB9E0F;
-@varProperty: #7EAD25;
+@varUnevaluatedKeyword: #7EAD25;
+@varProperty: #535353;
 
 
 
@@ -328,7 +329,10 @@ th.rw_warnings {
 	}
 }
 
-.cm-s-recognizer {
+.recognizer-active {
+	span.cm-keyword {
+		color: @varUnevaluatedKeyword;
+	}
  	span.cm-property {
 		color: @varProperty;
 	}
@@ -426,9 +430,6 @@ th.rw_warnings {
 	min-height: 15px;
 	height: 15px;
 }
-
-
-
 
 
 //
