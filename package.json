@@ -1,16 +1,14 @@
 {
   "name": "recognizer",
-  "version": "0.0.0",
-  "description": "Development tools for Brackets",
+  "version": "0.0.1",
+  "description": "This is very EXPERIMENTAL and not very intuitive yet. Please follow instructions at https://github.com/equiet/recognizer.",
+  "homepage": "https://github.com/equiet/recognizer",
   "main": "main.js",
   "dependencies": {
     "esprima": "~1.1.1",
     "escodegen": "~1.3.2"
   },
   "devDependencies": {},
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
   "repository": {
     "type": "git",
     "url": "git://github.com/equiet/recognizer.git"

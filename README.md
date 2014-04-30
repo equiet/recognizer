@@ -4,14 +4,15 @@ recognizer
 A concept for advanced developer tools for dynamic languages.
 Ideas will be demostrated on JavaScript, using Brackets editor.
 
-## Does it work already?
+## How to use
 
-Yes (kind of).
+Recognizer is finished and some steps are not fully automated yet. To try it out, here's what you should do:
 
-1. Open some `.html` file with associated `.js` file in Brackets.
-2. `.recognizer.js` file will be created. Use this file as `<script>` source.
-3. Open Live Preview.
-4. You should now see which functions were called and the values of some variables.
+1. Open the JavaScript files you want to debug (these need to be in `Working Files` in the left sidebar).
+1. In your HTML file, you need to use instrumented files (these will be created automatically when you open Live Preview). Change `<script src="file.js">` to `<script src="file.recognizer.js">`.
+1. Open Live Preview. You should now be able to inspect variables in JavaScript files.
+
+If you encounter any problems, more information might be available in the console (Debug -> Show Developer Tools).
 
 ## Sketches
 
