@@ -6,10 +6,10 @@ Ideas will be demostrated on JavaScript, using Brackets editor.
 
 ## How to use
 
-Recognizer is finished and some steps are not fully automated yet. To try it out, here's what you should do:
+Recognizer is not finished yet. To try it out, here's what you should do:
 
-1. Open the JavaScript files you want to debug (these need to be in `Working Files` in the left sidebar).
-1. In your HTML file, you need to use instrumented files (these will be created automatically when you open Live Preview). Change `<script src="file.js">` to `<script src="file.recognizer.js">`.
+1. Open a folder in Brackets (a project) with JavaScript files you want to debug.
+1. Double-click on the JavaScript files you want to instrument (so that they are in `Working Files`).
 1. Open Live Preview. You should now be able to inspect variables in JavaScript files.
 
 If you encounter any problems, more information might be available in the console (Debug -> Show Developer Tools).
