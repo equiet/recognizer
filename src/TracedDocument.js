@@ -129,8 +129,6 @@ define(function (require, exports, module) {
                 var result = WebInspector.RemoteObject.fromPayload(res.result);
                 var message = new WebInspector.ConsoleCommandResult(result, !!res.wasThrown, '', WebInspector.Linkifier, undefined, undefined, undefined);
                 var messageElement = message.toMessageElement();
-                console.log(result, message, messageElement);
-
                 $(messageElement).find('.section .header').trigger('click').hide();
 
                 if (this.$tooltips[probeId]) {
