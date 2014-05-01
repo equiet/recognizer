@@ -2302,7 +2302,7 @@ define(function (require, exports, module) {
 
     FORMAT_DEFAULTS = getDefaultOptions().format;
 
-    exports.version = JSON.parse(require('text!node_modules/escodegen/package.json')).version;
+    exports.version = "1.3.2";
     exports.generate = generate;
     exports.attachComments = attachComments;
     exports.browser = false;

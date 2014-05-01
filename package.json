@@ -1,13 +1,10 @@
 {
   "name": "recognizer",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Inspect JavaScript variables real-time. This is still experimental, please follow instructions at https://github.com/equiet/recognizer.",
   "homepage": "https://github.com/equiet/recognizer",
   "main": "main.js",
-  "dependencies": {
-    "esprima": "~1.1.1",
-    "escodegen": "~1.3.2"
-  },
+  "dependencies": {},
   "devDependencies": {},
   "repository": {
     "type": "git",
