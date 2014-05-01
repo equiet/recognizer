@@ -37,6 +37,7 @@ define(function (require, exports, module) {
      */
     RecognizerServer.prototype.canServe = function (localPath) {
         console.log('canServe:', localPath, (!this._baseUrl && FileUtils.isStaticHtmlFileExt(localPath)));
+        return true;
         // RecognizerServer requires that the base URL is undefined and static HTML files
         return (!this._baseUrl && FileUtils.isStaticHtmlFileExt(localPath));
     };
@@ -63,6 +64,7 @@ define(function (require, exports, module) {
      * @return {string} Converts an absolute path within the project root to a file: URL.
      */
     RecognizerServer.prototype.pathToUrl = function (path) {
+        console.log('pathToUrl', path);
         return encodeURI(PREFIX + path);
     };
 

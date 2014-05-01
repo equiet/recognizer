@@ -1,0 +1,1 @@
+window.fondue = require("./fondue");

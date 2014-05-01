@@ -10,12 +10,13 @@ define(function (require, exports, module) {
         DocumentManager = brackets.getModule('document/DocumentManager'),
         EditorManager   = brackets.getModule('editor/EditorManager'),
         ProjectManager  = brackets.getModule('project/ProjectManager'),
-//        LiveDevServerManager = brackets.getModule('LiveDevelopment/LiveDevServerManager'),
+        LiveDevServerManager = brackets.getModule('LiveDevelopment/LiveDevServerManager'),
         UI = require('src/UI'),
         WidgetManager = require('src/WidgetManager'),
         TracerManager = require('src/TracerManager'),
         WebInspector = require('thirdparty/WebInspector'),
-        RecognizerServer = require('src/RecognizerServer').RecognizerServer;
+        RecognizerServer = require('src/RecognizerServer').RecognizerServer,
+        ProxyProvider = require('src/ProxyProvider');
 
     ExtensionUtils.loadStyleSheet(module, 'main.less');
     ExtensionUtils.loadStyleSheet(module, 'src/styles/font-awesome.css');
@@ -49,7 +50,8 @@ define(function (require, exports, module) {
     AppInit.appReady(function() {
         // UI.panel()
 
-//        LiveDevServerManager.registerServer({ create: function() { return new RecognizerServer(); } }, 50);
+        ProxyProvider.init();
+//        LiveDevServerManager.registerServer({ create: function() { return new RecognizerServer(); } }, 1000);
 
     });
 
