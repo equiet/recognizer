@@ -17,6 +17,7 @@ define(function (require, exports, module) {
         WebInspector = require('thirdparty/WebInspector'),
         RecognizerServer = require('src/RecognizerServer').RecognizerServer,
         ProxyProvider = require('src/ProxyProvider');
+//        fs = require('fs');
 
     ExtensionUtils.loadStyleSheet(module, 'main.less');
     ExtensionUtils.loadStyleSheet(module, 'src/styles/font-awesome.css');
@@ -34,7 +35,12 @@ define(function (require, exports, module) {
             TracerManager.disconnectAll();
         }
         if (status === 1) {
+            if (ProjectManager.getProjectRoot() === null) {
+                console.log('Recognizer needs to be run in a project.');
+                return;
+            }
             DocumentManager.getWorkingSet().forEach(function(file) {
+//                fs.rmdirSync(ProjectManager.getProjectRoot());
                 TracerManager.registerFile(file);
             });
         }

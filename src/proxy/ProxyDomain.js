@@ -65,6 +65,9 @@
      */
     var _domainManager = null;
 
+    // TODO: Figure out a better way to pass project root to _filter function
+    var projectRoot = null;
+
     // MD5 -> instrumented file
     var _instrumentedFileCache = {};
 
@@ -108,8 +111,9 @@
 
             // If .recognizer.js file exists, use it
             try {
-                var instrumentedPath = path.replace(/\.js$/, '.recognizer.js');
-                return fs.readFileSync(instrumentedPath, 'utf8');
+                var relativePath = realPath.replace(projectRoot, '');
+                var recognizerPath = projectRoot + '.recognizer/' + relativePath;
+                return fs.readFileSync(recognizerPath, 'utf8');
             } catch (e) {
                 return content;
             }
@@ -235,6 +239,8 @@
      *    for example, IPv4, IPv6, or a UNIX socket.
      */
     function _cmdGetServer(path, modeName, pathExcludeRegexp, cb) {
+        projectRoot = path;
+
         // Make sure the key doesn't conflict with some built-in property of Object.
         var pathKey = PATH_KEY_PREFIX + "-" + path + "-" + modeName;
         if (_servers[pathKey]) {

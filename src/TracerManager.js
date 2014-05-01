@@ -20,9 +20,12 @@ define(function (require, exports, module) {
             return;
         }
 
-        // Create .recognizer.js file
-        var newPath = file.fullPath.replace(/\.js$/, '.recognizer.js');
+        // Create instrumented file in .recognizer/ folder
+        var projectRoot = ProjectManager.getProjectRoot().fullPath;
+        var relativePath = file.fullPath.replace(projectRoot, '');
+        var newPath = projectRoot + '.recognizer/' + relativePath;
         var newFile = FileSystem.getFileForPath(newPath);
+        var newDirectory = FileSystem.getDirectoryForPath(newFile._parentPath).create()
 
         file.read({}, function(err, data, stat) {
             var tracerId = Math.floor(Math.random() * 1000 * 1000 * 1000),
@@ -35,11 +38,12 @@ define(function (require, exports, module) {
                 instrumentedCode.probes
             );
 
-            newFile.write(tracedDocument.code, {});
+            newFile.write(tracedDocument.code, {blind: true}, function() {
+                tracedDocuments[file.fullPath] = tracedDocument;
 
-            tracedDocuments[file.fullPath] = tracedDocument;
+                callback(null, file);
+            });
 
-            callback(null, file);
         });
 
     }
