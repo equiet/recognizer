@@ -357,6 +357,7 @@ th.rw_warnings {
 	box-shadow: 1px 1px 0 rgba(0,0,0,0.05), -1px -1px 0 rgba(0,0,0,0.05), 0 1px 3px rgba(0,0,0,0.3);
 	border-radius: 2px;
 	text-align: center;
+	display: none;
 
 	&::before {
 		content: '';
@@ -370,6 +371,9 @@ th.rw_warnings {
 		height: 6px;
 		box-shadow: -1px -1px 0 rgba(0,0,0,0.2);
 		-webkit-transform: rotate(45deg);
+	}
+	&.is-active {
+		display: block;
 	}
 	&.is-object, &.is-function {
 		text-align: left;

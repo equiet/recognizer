@@ -75,10 +75,7 @@ define(function (require, exports, module) {
         }.bind(this));
 
         var _showTooltip = function(probeId, $anchorElement) {
-            // Do nothing if tooltip already exists
-            if (this.$tooltips[probeId]) {
-                return;
-            }
+            this.ensureTooltipExists(probeId);
 
             // Compute tooltip position
             var clientRect = $anchorElement[0].getBoundingClientRect();
@@ -94,23 +91,13 @@ define(function (require, exports, module) {
             }
 
             // Create tooltip
-            this.$tooltips[probeId] = $('<div />')
-                .addClass('recognizer-probe-tooltip')
-                .addClass('is-' + this._probesCache[probeId].type)
+            this.$tooltips[probeId]
+                .addClass('is-active')
                 .css({
                     width: tooltipWidth,
                     height: tooltipHeight,
                     top: clientRect.top + clientRect.height,
                     left: clientRect.left + clientRect.width/2 - tooltipWidth/2
-                })
-                .appendTo($('.main-view'))
-                .data('probe', probeId)
-                .html('Loading...')
-                .on('mouseenter', function() {
-                    $(this).data('keepOpen', true);
-                })
-                .on('mouseleave', function() {
-                    $(this).data('keepOpen', false);
                 });
 
             // Decide whether to show tooltip above or below the anchor
@@ -124,18 +111,6 @@ define(function (require, exports, module) {
                     .css({top: clientRect.top + clientRect.height});
             }
 
-            // Get value of the probe
-            Inspector.Runtime.evaluate('__recognizer' + this.tracerId + '._probeValues["' + probeId + '"]', 'console', false, false, undefined, undefined, undefined, true /* generate preview */, function (res) {
-                var result = WebInspector.RemoteObject.fromPayload(res.result);
-                var message = new WebInspector.ConsoleCommandResult(result, !!res.wasThrown, '', WebInspector.Linkifier, undefined, undefined, undefined);
-                var messageElement = message.toMessageElement();
-                $(messageElement).find('.section .header').trigger('click').hide();
-
-                if (this.$tooltips[probeId]) {
-                    this.$tooltips[probeId].html(messageElement);
-                }
-
-            }.bind(this));
         }.bind(this);
 
         // Handle mouseout on probes (remove tooltip)
@@ -147,12 +122,31 @@ define(function (require, exports, module) {
 
             // Remove the tooltip
             if (this.$tooltips[probeId]) {
-                this.$tooltips[probeId].remove()
-                this.$tooltips[probeId] = null;
+                this.$tooltips[probeId].removeClass('is-active');
             }
         }.bind(this);
 
     }
+
+    TracedDocument.prototype.ensureTooltipExists = function(probeId) {
+        if (this.$tooltips[probeId]) {
+            return;
+        }
+
+        // Create tooltip
+        this.$tooltips[probeId] = $('<div />')
+            .addClass('recognizer-probe-tooltip')
+            .addClass('is-' + this._probesCache[probeId].type)
+            .data('probe', probeId)
+            .html('Loading...')
+            .on('mouseenter', function() {
+                $(this).data('keepOpen', true);
+            })
+            .on('mouseleave', function() {
+                $(this).data('keepOpen', false);
+            })
+            .appendTo($('.main-view'));
+    };
 
     TracedDocument.prototype.isReady = function() {
         return this._state === 'connected';
@@ -248,6 +242,19 @@ define(function (require, exports, module) {
                     className: 'recognizer-probe is-' + probe.type + ' is-probe-' + location.join('-')
                 }
             );
+
+            // Update tooltip
+            this.ensureTooltipExists(probe.id);
+            Inspector.Runtime.evaluate('__recognizer' + this.tracerId + '._probeValues["' + probe.id + '"]', 'console', false, false, undefined, undefined, undefined, true /* generate preview */, function (res) {
+                var result = WebInspector.RemoteObject.fromPayload(res.result);
+                var message = new WebInspector.ConsoleCommandResult(result, !!res.wasThrown, '', WebInspector.Linkifier, undefined, undefined, undefined);
+                var messageElement = message.toMessageElement();
+                $(messageElement).find('.section .header').trigger('click').hide();
+
+                if (this.$tooltips[probe.id]) {
+                    this.$tooltips[probe.id].html(messageElement);
+                }
+            }.bind(this));
 
         }.bind(this));
 
