@@ -36,4 +36,5 @@ Function and variable inspection
 - better object inspection
 - semantic highlighting
 - code execution animation
+- flash changed value
 - execution timeline
