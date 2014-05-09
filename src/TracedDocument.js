@@ -9,6 +9,7 @@ define(function (require, exports, module) {
         WebInspector = require('thirdparty/WebInspector'),
         DocumentManager = brackets.getModule('document/DocumentManager'),
         ExtensionUtils = brackets.getModule('utils/ExtensionUtils'),
+        _ = brackets.getModule('thirdparty/lodash'),
         HoverState = require('src/utils/HoverState').HoverState;
 
     function TracedDocument(file, tracerId, code) {
@@ -25,7 +26,6 @@ define(function (require, exports, module) {
         DocumentManager.getDocumentForPath(file.fullPath).then(function(doc) {
             doc._ensureMasterEditor();
             this.hostEditor = doc._masterEditor;
-            this.hostEditor._codeMirror.setOption('theme', 'default recognizer');
         }.bind(this));
 
         /**
@@ -153,6 +153,9 @@ define(function (require, exports, module) {
     };
 
     TracedDocument.prototype.connect = function() {
+        // Set the Recognizer theme
+        this.hostEditor._codeMirror.setOption('theme', 'default recognizer');
+
         Inspector.Runtime.evaluate('__recognizer' + this.tracerId + '.connect()', function (res) {
             if (!res.wasThrown) {
                 this._objectId = res.result.objectId;
@@ -167,6 +170,17 @@ define(function (require, exports, module) {
 
     TracedDocument.prototype.disconnect = function() {
         this._state = 'disconnected';
+
+        // Clear all markers
+        Object.keys(this._probesCache).forEach(function(probeId) {
+            // probe = {id, type}
+            if (this.markers[probeId]) {
+                this.markers[probeId].clear();
+            }
+        }.bind(this));
+
+        // Reset editor theme
+        this.hostEditor._codeMirror.setOption('theme', 'default');
     };
 
     TracedDocument.prototype.getLog = function(since, callback) {
@@ -221,6 +235,11 @@ define(function (require, exports, module) {
                 return parseInt(val, 10);
             });
 
+            // Do not instrument multiline probes for now (TODO)
+            if (location[0] !== location[2]) {
+                return;
+            }
+
             // Do not continue if cache is not invalidated
             if (this._probesCache[probe.id] && this._probesCache[probe.id].type === probe.type) {
                 return;
@@ -248,7 +267,21 @@ define(function (require, exports, module) {
             Inspector.Runtime.evaluate('__recognizer' + this.tracerId + '._probeValues["' + probe.id + '"]', 'console', false, false, undefined, undefined, undefined, true /* generate preview */, function (res) {
                 var result = WebInspector.RemoteObject.fromPayload(res.result);
                 var message = new WebInspector.ConsoleCommandResult(result, !!res.wasThrown, '', WebInspector.Linkifier, undefined, undefined, undefined);
+
+                // Some properties are duplicated, I don't know why; removing duplicates
+                if (message._messageElement.children[0] && message._messageElement.children[0].children[0] && message._messageElement.children[0].children[0].children[1]) {
+                    // TODO: finish this
+                    // console.log(message._messageElement.children[0].children[0].children[1].children);
+                    var children = Array.prototype.slice.call(message._messageElement.children[0].children[0].children[1].children);
+                    children.forEach(function(node, index) {
+                        if (index > 0 && children[index].innerHTML === children[index - 1].innerHTML) {
+                            message._messageElement.children[0].children[0].children[1].children.removeChild(children);
+                        }
+                    });
+                }
+
                 var messageElement = message.toMessageElement();
+
                 $(messageElement).find('.section .header').trigger('click').hide();
 
                 if (this.$tooltips[probe.id]) {
