@@ -48,7 +48,6 @@ define(function (require, exports, module) {
             window.RuntimeAgent = Inspector.Runtime;
             TracerManager.disconnectAll();
             TracerManager.connectAll();
-            $('body').addClass('recognizer-active');
         }
     });
 
