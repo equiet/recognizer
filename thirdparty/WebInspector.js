@@ -8047,7 +8047,7 @@ WebInspector.RemoteObject.prototype = {
 
     hideDOMNodeHighlight: function()
     {
-        WebInspector.domAgent.hideDOMNodeHighlight();
+        // WebInspector.domAgent.hideDOMNodeHighlight();
     },
 
     /**

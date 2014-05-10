@@ -90,6 +90,14 @@ define(function (require, exports, module) {
                 tooltipHeight = 30;
             }
 
+            // Some properties are duplicated, I don't know why; removing duplicates
+            var $properties = this.$tooltips[probeId].find('.properties > li');
+            $properties.each(function(index) {
+                if (index > 0 && $properties.eq(index).children('.name').text() === $properties.eq(index - 1).children('.name').text()) {
+                    $(this).remove();
+                }
+            });
+
             // Create tooltip
             this.$tooltips[probeId]
                 .addClass('is-active')
@@ -267,19 +275,6 @@ define(function (require, exports, module) {
             Inspector.Runtime.evaluate('__recognizer' + this.tracerId + '._probeValues["' + probe.id + '"]', 'console', false, false, undefined, undefined, undefined, true /* generate preview */, function (res) {
                 var result = WebInspector.RemoteObject.fromPayload(res.result);
                 var message = new WebInspector.ConsoleCommandResult(result, !!res.wasThrown, '', WebInspector.Linkifier, undefined, undefined, undefined);
-
-                // Some properties are duplicated, I don't know why; removing duplicates
-                if (message._messageElement.children[0] && message._messageElement.children[0].children[0] && message._messageElement.children[0].children[0].children[1]) {
-                    // TODO: finish this
-                    // console.log(message._messageElement.children[0].children[0].children[1].children);
-                    var children = Array.prototype.slice.call(message._messageElement.children[0].children[0].children[1].children);
-                    children.forEach(function(node, index) {
-                        if (index > 0 && children[index].innerHTML === children[index - 1].innerHTML) {
-                            message._messageElement.children[0].children[0].children[1].children.removeChild(children);
-                        }
-                    });
-                }
-
                 var messageElement = message.toMessageElement();
 
                 $(messageElement).find('.section .header').trigger('click').hide();
