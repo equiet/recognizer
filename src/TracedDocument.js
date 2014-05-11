@@ -144,7 +144,7 @@ define(function (require, exports, module) {
         // Create tooltip
         this.$tooltips[probeId] = $('<div />')
             .addClass('recognizer-probe-tooltip')
-            .addClass('is-' + this._probesCache[probeId].type)
+            .addClass(this._probesCache[probeId] ? 'is-' + this._probesCache[probeId].type : '')
             .data('probe', probeId)
             .html('Loading...')
             .on('mouseenter', function() {
@@ -184,6 +184,13 @@ define(function (require, exports, module) {
             // probe = {id, type}
             if (this.markers[probeId]) {
                 this.markers[probeId].clear();
+            }
+        }.bind(this));
+
+        // Remove all tooltips
+        Object.keys(this.$tooltips).forEach(function(probeId) {
+            if (this.$tooltips[probeId]) {
+                this.$tooltips[probeId].remove()
             }
         }.bind(this));
 
