@@ -72,7 +72,6 @@ define(function (require, exports, module) {
     };
 
     function instrument(code) {
-
         var ast = esprima.parse(code, {
             loc: true,
             tolerant: false
@@ -208,16 +207,8 @@ define(function (require, exports, module) {
                     );
                 }
 
-                // ?
-                console.warn('Unknown CallExpression', node);
+                // console.warn('Unknown CallExpression', node);
                 return _.cloneDeep(node);
-//                return _getProbeAst(
-//                    node.loc.start.line,
-//                    node.loc.start.column,
-//                    node.loc.end.line,
-//                    node.loc.end.column,
-//                    node
-//                );
             },
 
             MemberExpression: function (node, parent) {

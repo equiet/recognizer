@@ -28,8 +28,16 @@ define(function (require, exports, module) {
         var newDirectory = FileSystem.getDirectoryForPath(newFile._parentPath).create()
 
         file.read({}, function(err, data, stat) {
-            var tracerId = Math.floor(Math.random() * 1000 * 1000 * 1000),
-                instrumentedCode = Instrumenter.instrument(data);
+            var tracerId = Math.floor(Math.random() * 1000 * 1000 * 1000);
+
+            // If the code cannot be instrumented (e.g. there is an error in the code)
+            try {
+                var instrumentedCode = Instrumenter.instrument(data);
+            } catch (e) {
+                this.unregisterFile(file);
+                console.warn('[Recognizer]', 'File', file.fullPath, 'cannot be instrumented because there is an error:', e);
+                return;
+            }
 
             var tracedDocument = new TracedDocument(
                 file,
@@ -40,18 +48,17 @@ define(function (require, exports, module) {
 
             newFile.write(tracedDocument.code, {blind: true}, function() {
                 tracedDocuments[file.fullPath] = tracedDocument;
-
                 callback(null, file);
             });
 
-        });
+        }.bind(this));
 
     }
 
     function unregisterFile(file, callback) {
         delete tracedDocuments[file.fullPath];
         var tracedPath = file.fullPath.replace(/\.js$/, '.recognizer.js');
-        ProjectManager.deleteItem(FileSystem.getFileForPath(tracedPath));
+        // ProjectManager.deleteItem(FileSystem.getFileForPath(tracedPath));
     }
 
     function connectAll() {
