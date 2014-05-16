@@ -24,7 +24,7 @@ var __recognizer{{tracerId}} = (function () {
                 argsCount: args.length,
                 time: Date.now()
             });
-            this._args.push(Array.prototype.slice.call(args));
+            this._args.push(_.cloneDeep(args));
         },
 
         getCalls: function (since) {
