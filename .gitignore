@@ -1,1 +1,3 @@
 .idea/
+node_modules/connect/lib/public/favicon.ico
+node_modules/connect/lib/public/icons/
