@@ -30,7 +30,7 @@
 
     var connect          = require('connect'),
         crypto           = require('crypto'),
-        fondue           = require('fondue'),
+        // fondue           = require('fondue'),
         fs               = require('fs'),
         http             = require('http'),
         proxyMiddleware  = require('./middleware-proxy'),
@@ -69,25 +69,25 @@
     var projectRoot = null;
 
     // MD5 -> instrumented file
-    var _instrumentedFileCache = {};
+    // var _instrumentedFileCache = {};
 
-    function _instrument(src, options) {
-        var charPerLine = src.length / src.split("\n").length;
-        if (charPerLine > 300) {
-            console.log(options.path + " probably minified (" + charPerLine + " char/line); skipping");
-            return src;
-        }
+    // function _instrument(src, options) {
+    //     var charPerLine = src.length / src.split("\n").length;
+    //     if (charPerLine > 300) {
+    //         console.log(options.path + " probably minified (" + charPerLine + " char/line); skipping");
+    //         return src;
+    //     }
 
-        options = (options || {});
-        var md5 = crypto.createHash('md5');
-        md5.update(options.path + '||' + options.include_prefix + '||' + src);
-        var digest = md5.digest('hex');
-        if (digest in _instrumentedFileCache) {
-            return _instrumentedFileCache[digest];
-        } else {
-            return _instrumentedFileCache[digest] = fondue.instrument.apply(fondue, arguments).toString();
-        }
-    }
+    //     options = (options || {});
+    //     var md5 = crypto.createHash('md5');
+    //     md5.update(options.path + '||' + options.include_prefix + '||' + src);
+    //     var digest = md5.digest('hex');
+    //     if (digest in _instrumentedFileCache) {
+    //         return _instrumentedFileCache[digest];
+    //     } else {
+    //         return _instrumentedFileCache[digest] = fondue.instrument.apply(fondue, arguments).toString();
+    //     }
+    // }
 
     function _makeAccept(pathExcludeRegexp) {
         return function (req, contentType) {
