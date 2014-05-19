@@ -1,3 +1,8 @@
+/**
+ * Colors
+ * ------------------------------------
+ */
+
 @recognizerBlue: rgb(50,205,220);
 @recognizerRed: rgb(249,29,43);
 @recognizerYellow: rgb(254,199,0);
@@ -15,6 +20,10 @@
 
 
 
+/**
+ * Status indicator in the bottom panel
+ * ------------------------------------
+ */
 
 #status-indicator-recognizer {
 	&:before {
@@ -43,6 +52,316 @@
 		box-shadow: 0 0 4px @recognizerYellow;
 	}
 }
+
+
+
+/**
+ * Widget for showing the log of function calls
+ * --------------------------------------------
+ */
+
+.recognizer-widget {
+	font-family: "Source Sans Pro";
+	margin: 10px;
+	background: #f8f8f8;
+}
+.rw_scroll-container {
+	position: absolute;
+	height: 100%;
+	width: calc(100% - 20px);
+	border-radius: 2px;
+	box-shadow: inset 1px 1px 0 rgba(0,0,0,0.1), inset -1px -1px 0 rgba(0,0,0,0.1);
+
+	&.has-scroll-up:before {
+		content: "";
+		display: block;
+		position: absolute;
+		top: -5px;
+		left: 0;
+		width: 100%;
+		height: 5px;
+		box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+	}
+	&.has-scroll-down:after {
+		content: "";
+		display: block;
+		position: absolute;
+		top: 100%;
+		left: 0;
+		width: 100%;
+		height: 5px;
+		box-shadow: 0 -1px 4px rgba(0,0,0,0.2);
+	}
+}
+.rw_scroll-content {
+	width: 100%;
+	height: 100%;
+	overflow: scroll;
+	overflow: hidden;
+}
+.rw_table {
+	position: relative;
+
+	td {
+		font-size: 12px;
+		padding: 3px 15px;
+		color: #111;
+		border: none;
+	}
+	tr:first-child {
+		td, th {
+			padding-top: 8px;
+		}
+	}
+	tr:last-child {
+		td, th {
+			padding-bottom: 8px;
+		}
+	}
+	th {
+		background: rgba(0,0,0,0.02);
+		padding: 3px 0;
+	}
+}
+.rw_group {
+	border-bottom: 1px solid rgba(0,0,0,0.04);
+}
+th.rw_time-base {
+	// font-size: 0 !important;
+	font-size: 12px !important;
+	font-weight: 600;
+	text-align: left;
+	padding-left: 12px;
+	padding-right: 7px;
+
+	.rw_table tr:first-child & {
+		font-size: 12px !important;
+	}
+}
+th.rw_time-mili {
+	font-size: 12px !important;
+	font-weight: 600;
+	color: #999;
+	text-align: left;
+}
+th.rw_warnings {
+	border-right: 1px solid rgba(0,0,0,0.06);
+	padding: 3px 10px;
+
+	.fa-exclamation-triangle {
+		font-size: 10px;
+		color: @recognizerYellow;
+	}
+}
+.rw_no-arguments {
+	font-style: italic;
+	color: #666;
+}
+
+
+
+/**
+ * A counter displayed next to the function declaration
+ * ----------------------------------------------------
+ */
+
+.recognizer-counter {
+	background: @recognizerBlue;
+	color: #fff;
+	font-weight: bold;
+	box-shadow: inset 0 -1px 0 rgba(0,0,0,0.2), 0 0 3px rgba(50,205,220,0.3);
+	border-radius: 10px;
+	display: inline-block;
+	margin: 0 4px;
+	padding: 0 5px;
+	line-height: 16px;
+	pointer-events: all;
+	transition: background 0.2s;
+
+	&:hover,
+	&:focus {
+		background: darken(@recognizerBlue, 8%);
+		text-decoration: none;
+		color: #fff;
+		// box-shadow: inset 0 -1px 0 rgba(0,0,0,0.2), 0 0 3px rgba(50,205,220,1);
+	}
+	&.is-active {
+		color: @recognizerBlue;
+		background: #fff;
+		box-shadow: inset 0 1px 0 rgba(0, 0, 0, 0.15), inset 0 0 2px rgba(0,0,0,0.4);
+	}
+}
+
+
+
+/**
+ * Semantic highlighting of keywords in text
+ * -----------------------------------------
+ */
+
+.recognizer-probe {
+	// background: #55ee22;
+	border: 1px dashed transparent;
+	border-bottom: 1px dashed rgba(0,0,0,0.2);
+	pointer-events: all;
+	color: #9B9B9B !important;
+	transition: border 0.3s;
+
+	&:hover {
+		border: 1px dashed rgba(0,0,0,0.3);
+	}
+    &.is-number {
+        color: @varNumber !important;
+    }
+	&.is-object {
+		color: @varObject !important;
+	}
+	&.is-function {
+		color: @varFunction !important;
+	}
+	&.is-string {
+		color: @varString !important;
+	}
+	&.is-boolean {
+		color: @varBoolean !important;
+	}
+	&.is-undefined {
+		color: @varUndefined !important;
+	}
+	&.is-nan {
+		color: @varNan !important;
+	}
+	&.is-null {
+		color: @varNull !important;
+	}
+}
+
+.cm-s-recognizer {
+	span.cm-keyword {
+		color: @varUnevaluatedKeyword;
+	}
+ 	span.cm-property {
+		color: @varProperty;
+	}
+	span.cm-number {
+		color: @varNumber;
+	}
+	span.cm-atom {
+		color: @varProperty;
+	}
+	span.cm-string {
+		color: @varString;
+	}
+}
+
+
+
+/**
+ * Probe tooltip
+ * -------------
+ */
+
+.recognizer-probe-tooltip {
+	position: absolute;
+	z-index: 100;
+	top: 0;
+	left: 0;
+	margin-top: 5px;
+	background: #fff;
+	box-shadow: 1px 1px 0 rgba(0,0,0,0.05), -1px -1px 0 rgba(0,0,0,0.05), 0 1px 3px rgba(0,0,0,0.3);
+	border-radius: 2px;
+	text-align: center;
+	display: none;
+
+	&::before {
+		content: '';
+		display: block;
+		position: absolute;
+		background: #fff;
+		top: -3px;
+		left: 50%;
+		margin-left: -3px;
+		width: 6px;
+		height: 6px;
+		box-shadow: -1px -1px 0 rgba(0,0,0,0.2);
+		-webkit-transform: rotate(45deg);
+	}
+	&.is-active {
+		display: block;
+	}
+	&.is-object, &.is-function {
+		text-align: left;
+
+		.console-message {
+			padding: 7px 10px;
+		}
+	}
+	&.is-below {
+		margin-top: 7px;
+	}
+	&.is-above {
+		margin-top: -7px;
+
+		&::before {
+			top: auto;
+			bottom: -3px;
+			box-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+		}
+	}
+	.console-message {
+		padding: 5px 8px;
+		box-sizing: border-box;
+		height: 100%;
+		overflow: scroll;
+	}
+	.source-code {
+		white-space: pre;
+	}
+}
+
+.console-message .section > .header {
+	min-height: 15px;
+	height: 15px;
+}
+
+
+
+/**
+ * Inline widget displaying value of a probe
+ * -----------------------------------------
+ */
+
+.recognizer-probe-widget {
+	display: inline-block;
+	border: 1px solid rgba(0,0,0,0.15);
+	height: 15px;
+	border-radius: 2px;
+	margin: 0 4px;
+	padding: 0 5px;
+	pointer-events: all;
+	-webkit-transform: translateY(1px);
+	// max-width: 100px;
+	overflow: hidden;
+
+	// &:hover {
+	// 	max-width: 9999px;
+	// }
+	.console-user-command-result {
+		display: inline-block;
+	}
+	.console-user-command-result .source-code {
+		white-space: nowrap;
+		text-overflow: ellipsis;
+		max-width: 100px;
+	}
+}
+
+
+
+/**
+ * A separate panel for showing log of function calls, not used at the moment
+ * --------------------------------------------------------------------------
+ */
 
 #recognizer-panel {
 	position: absolute;
@@ -158,362 +477,3 @@
 		color: #999;
 	}
 }
-
-.recognizer-widget {
-	font-family: "Source Sans Pro";
-	margin: 10px;
-	background: #f8f8f8;
-}
-.rw_scroll-container {
-	position: absolute;
-	height: 100%;
-	width: calc(100% - 20px);
-	border-radius: 2px;
-	box-shadow: inset 1px 1px 0 rgba(0,0,0,0.1), inset -1px -1px 0 rgba(0,0,0,0.1);
-
-	&.has-scroll-up:before {
-		content: "";
-		display: block;
-		position: absolute;
-		top: -5px;
-		left: 0;
-		width: 100%;
-		height: 5px;
-		box-shadow: 0 1px 4px rgba(0,0,0,0.2);
-	}
-	&.has-scroll-down:after {
-		content: "";
-		display: block;
-		position: absolute;
-		top: 100%;
-		left: 0;
-		width: 100%;
-		height: 5px;
-		box-shadow: 0 -1px 4px rgba(0,0,0,0.2);
-	}
-}
-.rw_scroll-content {
-	width: 100%;
-	height: 100%;
-	overflow: scroll;
-	overflow: hidden;
-}
-.rw_table {
-	position: relative;
-
-	td {
-		font-size: 12px;
-		padding: 3px 15px;
-		color: #111;
-		border: none;
-	}
-	tr:first-child {
-		td, th {
-			padding-top: 8px;
-		}
-	}
-	tr:last-child {
-		td, th {
-			padding-bottom: 8px;
-		}
-	}
-	// tr {
-	// 	display: none;
-
-	// 	&:nth-last-child(-n+5) {
-	// 		display: table-row;
-	// 	}
-	// }
-	th {
-		background: rgba(0,0,0,0.02);
-		padding: 3px 0;
-	}
-}
-.rw_group {
-	border-bottom: 1px solid rgba(0,0,0,0.04);
-}
-th.rw_time-base {
-	// font-size: 0 !important;
-	font-size: 12px !important;
-	font-weight: 600;
-	text-align: left;
-	padding-left: 12px;
-	padding-right: 7px;
-
-	.rw_table tr:first-child & {
-		font-size: 12px !important;
-	}
-}
-th.rw_time-mili {
-	font-size: 12px !important;
-	font-weight: 600;
-	color: #999;
-	text-align: left;
-}
-th.rw_warnings {
-	border-right: 1px solid rgba(0,0,0,0.06);
-	padding: 3px 10px;
-
-	.fa-exclamation-triangle {
-		font-size: 10px;
-		color: @recognizerYellow;
-	}
-}
-.rw_no-arguments {
-	font-style: italic;
-	color: #666;
-}
-
-
-.recognizer-counter {
-	background: @recognizerBlue;
-	color: #fff;
-	font-weight: bold;
-	box-shadow: inset 0 -1px 0 rgba(0,0,0,0.2), 0 0 3px rgba(50,205,220,0.3);
-	border-radius: 10px;
-	display: inline-block;
-	margin: 0 4px;
-	padding: 0 5px;
-	line-height: 16px;
-	pointer-events: all;
-	transition: background 0.2s;
-
-	&:hover,
-	&:focus {
-		background: darken(@recognizerBlue, 8%);
-		text-decoration: none;
-		color: #fff;
-		// box-shadow: inset 0 -1px 0 rgba(0,0,0,0.2), 0 0 3px rgba(50,205,220,1);
-	}
-	&.is-active {
-		color: @recognizerBlue;
-		background: #fff;
-		box-shadow: inset 0 1px 0 rgba(0, 0, 0, 0.15), inset 0 0 2px rgba(0,0,0,0.4);
-	}
-}
-
-.recognizer-probe {
-	// background: #55ee22;
-	border: 1px dashed transparent;
-	border-bottom: 1px dashed rgba(0,0,0,0.2);
-	pointer-events: all;
-	color: #9B9B9B !important;
-	transition: border 0.3s;
-
-	&:hover {
-		border: 1px dashed rgba(0,0,0,0.3);
-	}
-    &.is-number {
-        color: @varNumber !important;
-    }
-	&.is-object {
-		color: @varObject !important;
-	}
-	&.is-function {
-		color: @varFunction !important;
-	}
-	&.is-string {
-		color: @varString !important;
-	}
-	&.is-boolean {
-		color: @varBoolean !important;
-	}
-	&.is-undefined {
-		color: @varUndefined !important;
-	}
-	&.is-nan {
-		color: @varNan !important;
-	}
-	&.is-null {
-		color: @varNull !important;
-	}
-}
-
-.cm-s-recognizer {
-	span.cm-keyword {
-		color: @varUnevaluatedKeyword;
-	}
- 	span.cm-property {
-		color: @varProperty;
-	}
-	span.cm-number {
-		color: @varNumber;
-	}
-	span.cm-atom {
-		color: @varProperty;
-	}
-	span.cm-string {
-		color: @varString;
-	}
-}
-
-.recognizer-probe-tooltip {
-	position: absolute;
-	z-index: 100;
-	top: 0;
-	left: 0;
-	margin-top: 5px;
-	background: #fff;
-	box-shadow: 1px 1px 0 rgba(0,0,0,0.05), -1px -1px 0 rgba(0,0,0,0.05), 0 1px 3px rgba(0,0,0,0.3);
-	border-radius: 2px;
-	text-align: center;
-	display: none;
-
-	&::before {
-		content: '';
-		display: block;
-		position: absolute;
-		background: #fff;
-		top: -3px;
-		left: 50%;
-		margin-left: -3px;
-		width: 6px;
-		height: 6px;
-		box-shadow: -1px -1px 0 rgba(0,0,0,0.2);
-		-webkit-transform: rotate(45deg);
-	}
-	&.is-active {
-		display: block;
-	}
-	&.is-object, &.is-function {
-		text-align: left;
-
-		.console-message {
-			padding: 7px 10px;
-		}
-	}
-	&.is-below {
-		margin-top: 7px;
-	}
-	&.is-above {
-		margin-top: -7px;
-
-		&::before {
-			top: auto;
-			bottom: -3px;
-			box-shadow: 1px 1px 2px rgba(0,0,0,0.3);
-		}
-	}
-	.console-message {
-		padding: 5px 8px;
-		box-sizing: border-box;
-		height: 100%;
-		overflow: scroll;
-	}
-	.source-code {
-		white-space: pre;
-	}
-}
-
-.recognizer-probe-widget {
-	display: inline-block;
-	border: 1px solid rgba(0,0,0,0.15);
-	height: 15px;
-	border-radius: 2px;
-	margin: 0 4px;
-	padding: 0 5px;
-	pointer-events: all;
-	-webkit-transform: translateY(1px);
-//	max-width: 100px;
-	overflow: hidden;
-
-	// &:hover {
-	// 	max-width: 9999px;
-	// }
-	.console-user-command-result {
-		display: inline-block;
-	}
-	.console-user-command-result .source-code {
-		white-space: nowrap;
-		text-overflow: ellipsis;
-		max-width: 100px;
-	}
-}
-
-.console-message .section > .header {
-	min-height: 15px;
-	height: 15px;
-}
-
-
-//
-//.cm-s-default {
-//  span.cm-keyword {
-//    color: @accent-keyword;
-//  }
-//  span.cm-atom {
-//    color: @accent-atom;
-//  }
-//  span.cm-number {
-//    color: @varNumber;
-//  }
-//  span.cm-def {
-//    color: @accent-def;
-//  }
-//  span.cm-variable {
-//    color: @accent-variable;
-//  }
-//  span.cm-variable-2 {
-//    color: @accent-variable-2;
-//  }
-//  span.cm-variable-3 {
-//    color: @accent-variable-3;
-//  }
-//  span.cm-property {
-//    color: @accent-property;
-//  }
-//  span.cm-operator {
-//    color: @accent-operator;
-//  }
-//  span.cm-comment {
-//    color: @accent-comment;
-//  }
-//  span.cm-string {
-//    color: @varString;
-//  }
-//  span.cm-string-2 {
-//    color: @accent-string-2;
-//  }
-//  span.cm-meta {
-//    color: @accent-meta;
-//  }
-//  span.cm-error {
-//    color: @accent-error;
-//  }
-//  span.cm-qualifier {
-//    color: @accent-qualifier;
-//  }
-//  span.cm-builtin {
-//    color: @accent-builtin;
-//  }
-//  span.cm-bracket {
-//    color: @accent-bracket;
-//  }
-//  span.cm-tag {
-//    color: @accent-tag;
-//  }
-//  span.cm-attribute {
-//    color: @accent-attribute;
-//  }
-//  span.cm-header {
-//    color: @accent-header;
-//  }
-//  span.cm-quote {
-//    color: @accent-quote;
-//  }
-//  span.cm-hr {
-//    color: @accent-hr;
-//  }
-//  span.cm-link {
-//    color: @accent-link;
-//  }
-//  span.cm-rangeinfo {
-//    color: @accent-rangeinfo;
-//  }
-//  span.cm-minus {
-//    color: @accent-minus;
-//  }
-//  span.cm-plus {
-//    color: @accent-plus;
-//  }
-//}
