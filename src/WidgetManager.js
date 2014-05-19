@@ -8,6 +8,7 @@ define(function (require, exports, module) {
     var widgets = {},
         probeWidgets = {};
 
+    // Returns a function widget (and creates it if needed)
     function getWidget(filepath, position) {
         var id = JSON.stringify(position);
 
@@ -18,6 +19,7 @@ define(function (require, exports, module) {
         return widgets[id];
     }
 
+    // Returns a probe widget (and creates it if needed)
     function getProbeWidget(filepath, position) {
         var id = JSON.stringify(position);
 
