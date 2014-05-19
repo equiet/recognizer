@@ -25,9 +25,8 @@ Clone this repository into Brackets' `?/extensions/user/recognizer/` folder.
 
 ## Some ideas which are not yet fully implemented
 
-![Ideas](https://raw.github.com/equiet/recognizer/master/recognizer.png)
+![Ideas](https://raw.github.com/equiet/recognizer/master/ideas.png)
 
-- automatic debugging, code inspection
 - live editing
 - inline tests
 - code flow visualization
