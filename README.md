@@ -19,6 +19,8 @@ Clone this repository into Brackets' `?/extensions/user/recognizer/` folder.
 1. Double-click on the JavaScript files you want to instrument (so that they are in `Working Files`).
 1. Open Live Preview. You should now be able to inspect variables in JavaScript files.
 
+If you encounter any problems, more information might be available in the console (Debug -> Show Developer Tools).
+
 ## Screenshot
 
 ![Screenshot](https://raw.github.com/equiet/recognizer/master/screenshot.png)
