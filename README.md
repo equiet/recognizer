@@ -1,20 +1,36 @@
 Recognizer
 ==========
 
-Author: Jakub Jurovych (395881)
-
-Thesis: Techniques for JavaScript debugging
-
-Recognizer is in active development. Up-to-date files can be obtained from https://github.com/equiet/recognizer.
+Ideas for advanced developer tools for dynamic languages.
 
 ## How to install
 
-Unzip this file into Brackets' `extensions/user/recognizer/` folder.
+### From Brackets (recommended)
 
-To use an up-to-date version, install Recognizer using Brackets' Package Manager.
+Go to Extension Manager in Brackets and look for `recognizer`.
+
+### From source
+
+Clone this repository into Brackets' `?/extensions/user/recognizer/` folder.
 
 ## How to use
 
 1. Open a folder in Brackets (a project) with JavaScript files you want to debug.
 1. Double-click on the JavaScript files you want to instrument (so that they are in `Working Files`).
 1. Open Live Preview. You should now be able to inspect variables in JavaScript files.
+
+## Screenshot
+
+![Screenshot](https://raw.github.com/equiet/recognizer/master/screenshot.png)
+
+## Some ideas which are not yet fully implemented
+
+![Ideas](https://raw.github.com/equiet/recognizer/master/recognizer.png)
+
+- automatic debugging, code inspection
+- live editing
+- inline tests
+- code flow visualization
+- code documentation
+- flash changed value
+- execution timeline
