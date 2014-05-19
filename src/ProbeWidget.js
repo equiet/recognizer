@@ -12,6 +12,7 @@ define(function (require, exports, module) {
         this.$el = $('<span />').addClass('recognizer-probe-widget');
         position = position.split(',');
 
+        // Setup a marker
         DocumentManager.getDocumentForPath(filepath).then(function(doc) {
             var codeMirror;
             doc._ensureMasterEditor();
@@ -25,7 +26,6 @@ define(function (require, exports, module) {
     }
 
     ProbeWidget.prototype.updateValue = function (position, tracerId) {
-
         Inspector.Runtime.evaluate('__recognizer' + tracerId + '._probeValues["' + position + '"]', 'console', false, false, undefined, undefined, undefined, true /* generate preview */, function (res) {
             var result = WebInspector.RemoteObject.fromPayload(res.result);
             var message = new WebInspector.ConsoleCommandResult(result, !!res.wasThrown, '', WebInspector.Linkifier, undefined, undefined, undefined);
@@ -39,7 +39,6 @@ define(function (require, exports, module) {
 
             this.$el.html(messageElement);
         }.bind(this));
-
     };
 
     ProbeWidget.prototype.remove = function() {
