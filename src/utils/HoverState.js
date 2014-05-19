@@ -16,19 +16,19 @@ define(function (require, exports, module) {
                 this.items[item][field] = false;
             }.bind(this));
         }
-    }
+    };
 
     HoverState.prototype.set = function(id, field, value) {
         this.ensureFields(id);
         this.items[id][field] = value;
-    }
+    };
 
     HoverState.prototype.isHovered = function(id) {
         this.ensureFields(id);
         return this.fields.some(function(field) {
             return this.items[id][field];
         }.bind(this));
-    }
+    };
 
     exports.HoverState = HoverState;
 

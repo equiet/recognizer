@@ -1,4 +1,5 @@
-/*globals define, console*/
+/*jslint vars: true, plusplus: true, devel: true, nomen: true, indent: 4, maxerr: 50 */
+/*global define */
 
 define(function (require, exports, module) {
     'use strict';
@@ -8,20 +9,18 @@ define(function (require, exports, module) {
         Inspector       = brackets.getModule('LiveDevelopment/Inspector/Inspector'),
         AppInit         = brackets.getModule('utils/AppInit'),
         DocumentManager = brackets.getModule('document/DocumentManager'),
-        EditorManager   = brackets.getModule('editor/EditorManager'),
         ProjectManager  = brackets.getModule('project/ProjectManager'),
         LiveDevServerManager = brackets.getModule('LiveDevelopment/LiveDevServerManager'),
         UI = require('src/UI'),
-        WidgetManager = require('src/WidgetManager'),
         TracerManager = require('src/TracerManager'),
         WebInspector = require('thirdparty/WebInspector'),
-        RecognizerServer = require('src/RecognizerServer').RecognizerServer,
         ProxyProvider = require('src/ProxyProvider');
-//        fs = require('fs');
+
 
     ExtensionUtils.loadStyleSheet(module, 'main.less');
     ExtensionUtils.loadStyleSheet(module, 'src/styles/font-awesome.css');
     ExtensionUtils.loadStyleSheet(module, 'thirdparty/styles/inspector.css');
+
 
     // Update statusbar
     $(LiveDevelopment).on('statusChange', function(e, status) {
@@ -40,7 +39,6 @@ define(function (require, exports, module) {
                 return;
             }
             DocumentManager.getWorkingSet().forEach(function(file) {
-//                fs.rmdirSync(ProjectManager.getProjectRoot());
                 TracerManager.registerFile(file);
             });
         }
@@ -54,15 +52,11 @@ define(function (require, exports, module) {
 
     AppInit.appReady(function() {
         // UI.panel()
-
         ProxyProvider.init();
-//        LiveDevServerManager.registerServer({ create: function() { return new RecognizerServer(); } }, 1000);
-
     });
 
 
     // function testInspector() {
-
     //     Inspector.Runtime.evaluate('window', 'console', false, false, undefined, undefined, undefined, true /* generate preview */, function (res) {
     //         // res = {result, wasThrown}
     //         // console.log('RemoteObject', WebInspector.RemoteObject.fromPayload(res.result), !!res.wasThrown, 'window');
@@ -70,7 +64,6 @@ define(function (require, exports, module) {
     //     // Inspector.Runtime.evaluate('1+1', 'console', false, false, undefined, undefined, undefined, true /* generate preview */, function (res) {
     //     //     _printResult(WebInspector.RemoteObject.fromPayload(res.result), !!res.wasThrown, '1+1');
     //     // });
-
     // }
 
 });

@@ -2,6 +2,8 @@
  * Copyright (c) 2012 Massachusetts Institute of Technology, Adobe Systems
  * Incorporated, and other contributors. All rights reserved.
  *
+ * Modified by Jakub Jurovych (equiet)
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
@@ -96,10 +98,10 @@ define(function (require, exports, module) {
     function ProxyServer(config) {
         BaseServer.call(this, config);
     }
-    
+
     ProxyServer.prototype = Object.create(BaseServer.prototype);
     ProxyServer.prototype.constructor = ProxyServer;
-    
+
     ProxyServer.prototype.canServe = function (localPath) {
         return /*main.isEnabled() &&*/ FileUtils.isStaticHtmlFileExt(localPath);
     };
@@ -112,13 +114,13 @@ define(function (require, exports, module) {
         });
         return d;
     };
-    
+
     function _createProxyServer() {
         var config = {
             pathResolver    : ProjectManager.makeProjectRelativeIfPossible,
             root            : ProjectManager.getProjectRoot().fullPath
         };
-        
+
         return new ProxyServer(config);
     }
 
