@@ -65,18 +65,22 @@ define(function (require, exports, module) {
         Object.keys(tracedDocuments).forEach(function(key) {
             tracedDocuments[key].connect();
         });
+
         _listen();
     }
 
     function disconnectAll() {
         WidgetManager.removeAll();
+
         Object.keys(tracedDocuments).forEach(function(key) {
             tracedDocuments[key].disconnect();
         });
+
         _stopListening();
     }
 
     function _listen() {
+        // Keep track when we have last retrieved values
         var timestamp = 0;
 
         refreshInterval = setInterval(function () {
@@ -107,7 +111,7 @@ define(function (require, exports, module) {
 
             timestamp = Date.now();
 
-        }, 200);
+        }, 100);
     }
 
     function _stopListening() {

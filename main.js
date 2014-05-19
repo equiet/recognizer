@@ -34,16 +34,20 @@ define(function (require, exports, module) {
             TracerManager.disconnectAll();
         }
         if (status === 1) {
+            // Make sure that a project is opened
             if (ProjectManager.getProjectRoot() === null) {
-                console.log('Recognizer needs to be run in a project.');
+                console.warn('Recognizer needs to be run in a project.');
                 return;
             }
+            // Trace each file in the project
             DocumentManager.getWorkingSet().forEach(function(file) {
                 TracerManager.registerFile(file);
             });
         }
         if (status === 3) {
             window.RuntimeAgent = Inspector.Runtime;
+
+            // Refresh tracers
             TracerManager.disconnectAll();
             TracerManager.connectAll();
         }
@@ -51,8 +55,10 @@ define(function (require, exports, module) {
 
 
     AppInit.appReady(function() {
-        // UI.panel()
+        // Create proxy server when Brackets fully loads
         ProxyProvider.init();
+
+        // UI.panel()
     });
 
 
