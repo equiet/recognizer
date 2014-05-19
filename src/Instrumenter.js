@@ -14,7 +14,7 @@ define(function (require, exports, module) {
         escodegen = require('thirdparty/escodegen'),
         estraverse = require('thirdparty/estraverse'),
         _ = brackets.getModule('thirdparty/lodash'),
-        traverse = require('utils/traverse');
+        traverse = require('src/utils/traverse');
 
     var tracerSnippet = require('text!src/snippets/tracer.js');
 
@@ -352,7 +352,6 @@ define(function (require, exports, module) {
                                                 }
                                             )
                                         },
-
                                     ],
                                     "kind": "var"
                                 },
