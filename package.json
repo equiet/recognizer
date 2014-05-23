@@ -1,6 +1,6 @@
 {
   "name": "recognizer",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "description": "Inspect JavaScript variables real-time. This is still experimental, please follow instructions at https://github.com/equiet/recognizer.",
   "homepage": "https://github.com/equiet/recognizer",
   "main": "main.js",
