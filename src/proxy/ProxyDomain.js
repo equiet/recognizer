@@ -113,7 +113,8 @@
 
             // If .recognizer.js file exists, use it
             try {
-                var relativePath = realPath.replace(projectRoot, '');
+                // Change all slashes to forward slashes so that path replacing works even on Windows
+                var relativePath = realPath.replace(/\\/g, '/').replace(projectRoot.replace(/\\/g, '/'), '');
                 var recognizerPath = projectRoot + '.recognizer/' + relativePath;
                 return fs.readFileSync(recognizerPath, 'utf8');
             } catch (e) {
