@@ -46,7 +46,13 @@ define(function (require, exports, module) {
                 instrumentedCode.probes
             );
 
-            newFile.write(tracedDocument.code, {blind: true}, function() {
+            newFile.write(tracedDocument.code, {blind: true}, function(err) {
+                if (err) {
+                    console.warn('[Recognizer]', 'Error while writing instrumented file', file.fullPath, 'using id', tracerId, '. Error:', err);
+                    return;
+                }
+
+                console.log('[Recognizer]', 'Instrumenting file', file.fullPath, 'using id', tracerId);
                 tracedDocuments[file.fullPath] = tracedDocument;
                 callback(null, file);
             });
@@ -92,7 +98,7 @@ define(function (require, exports, module) {
                 }
                 tracedDocument.getLog(timestamp, function(err, log) {
                     if (err) {
-                        console.error('[recognizer] Error retrieving log', err, log);
+                        console.error('[Recognizer] Error retrieving log', err, log);
                         return;
                     }
                     log.forEach(function(logItem) {
@@ -103,7 +109,7 @@ define(function (require, exports, module) {
                 // Create probe widgets
                 tracedDocument.updateProbeValues(function(err, probes) {
                     if (err) {
-                        console.error('[recognizer] Error retrieving probe values', err, probes);
+                        console.error('[Recognizer] Error retrieving probe values', err, probes);
                         return;
                     }
                 });

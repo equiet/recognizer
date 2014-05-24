@@ -169,9 +169,9 @@ define(function (require, exports, module) {
                 this._objectId = res.result.objectId;
                 this._state = 'connected';
                 $(exports).trigger('connected');
-                console.log('[recognizer] Connected to tracer in ' + this.file.name);
+                console.log('[Recognizer] Connected to tracer in ' + this.file.name);
             } else {
-                console.log('[recognizer] Error connecting to tracer in ' + this.file.name, res);
+                console.log('[Recognizer] Error connecting to tracer in ' + this.file.name, res);
             }
         }.bind(this));
     };

@@ -47,9 +47,13 @@ define(function (require, exports, module) {
         if (status === 3) {
             window.RuntimeAgent = Inspector.Runtime;
 
-            // Refresh tracers
+            // Remove old tracers from the editor
             TracerManager.disconnectAll();
-            TracerManager.connectAll();
+
+            // XXX: Wait some time for page to load, then connect
+            setTimeout(function() {
+                TracerManager.connectAll();
+            }, 500);
         }
     });
 
