@@ -1,7 +1,7 @@
 Recognizer
 ==========
 
-Ideas for advanced developer tools for dynamic languages.
+Experimental implementation of semantic highlighting and other ideas for better development in dynamic languages.
 
 ## How to install
 
@@ -18,6 +18,8 @@ Clone this repository into Brackets' `?/extensions/user/recognizer/` folder.
 1. Open a folder in Brackets (a project) with JavaScript files you want to debug.
 1. Double-click on the JavaScript files you want to instrument (so that they are in `Working Files`).
 1. Open Live Preview. You should now be able to inspect variables in JavaScript files.
+
+Please note that Recognizer will a new folder `.recognizer` in the project root (this is where all instrumented files are stored).
 
 If you encounter any problems, more information might be available in the console (Debug -> Show Developer Tools).
 
