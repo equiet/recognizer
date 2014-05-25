@@ -23,7 +23,7 @@ If you encounter any problems, more information might be available in the consol
 
 ## Screenshot
 
-![Screenshot](https://raw.github.com/equiet/recognizer/master/screenshot.png)
+[![Screenshot](https://raw.github.com/equiet/recognizer/master/screenshot.png)](https://www.youtube.com/watch?v=1bjdekHj5ts)
 
 ## Some ideas which are not yet fully implemented
 
