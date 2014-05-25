@@ -82,7 +82,7 @@ define(function (require, exports, module) {
 
             var tooltipWidth, tooltipHeight;
 
-            if (this._probesCache[probeId].type === 'object' || this._probesCache[probeId].type === 'function') {
+            if (this._probesCache[probeId] && (this._probesCache[probeId].type === 'object' || this._probesCache[probeId].type === 'function')) {
                 tooltipWidth = 400;
                 tooltipHeight = 180;
             } else {
