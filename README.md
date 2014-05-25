@@ -1,7 +1,7 @@
 Recognizer
 ==========
 
-Experimental implementation of semantic highlighting and other ideas for better development in dynamic languages.
+Experimental implementation of semantic highlighting for JavaScript development.
 
 ## How to install
 
@@ -11,7 +11,7 @@ Go to Extension Manager in Brackets and look for `recognizer`.
 
 ### From source
 
-Clone this repository into Brackets' `?/extensions/user/recognizer/` folder.
+Clone this repository into Brackets' `extensions/user/recognizer/` folder.
 
 ## How to use
 
@@ -19,7 +19,7 @@ Clone this repository into Brackets' `?/extensions/user/recognizer/` folder.
 1. Double-click on the JavaScript files you want to instrument (so that they are in `Working Files`).
 1. Open Live Preview. You should now be able to inspect variables in JavaScript files.
 
-Please note that Recognizer will create a new folder `.recognizer` in the project root (this is where all instrumented files are stored).
+Please note that Recognizer will create a new `.recognizer` folder in the project root. This is where all instrumented files are stored.
 
 If you encounter any problems, more information might be available in the console (Debug -> Show Developer Tools).
 
