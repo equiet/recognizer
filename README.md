@@ -5,7 +5,7 @@ Experimental implementation of semantic highlighting for JavaScript development.
 
 ## Semantic highlighting
 
-Every color is based on real data flowing through the application, not just an abstract syntax. So if the last value of a variable was a number, it would be blue. If it was undefined, it would be red. This makes it easy to spot bugs.
+Every color is based on real data flowing through the app, not just an abstract syntax. So if the last value of a variable was a number, it would be blue. If it was undefined, it would be red. This makes it easy to spot bugs.
 
 ![Colors](https://raw.github.com/equiet/recognizer/master/colors.png)
 
