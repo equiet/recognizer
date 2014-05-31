@@ -7,6 +7,8 @@ Every color is based on real data flowing through the app, not just an abstract 
 
 ![Colors](https://raw.github.com/equiet/recognizer/master/colors.png)
 
+**Follow me** on [@equiet](https://twitter.com/equiet) to get the latest updates.
+
 ## How to install
 
 ### From Brackets (recommended)
